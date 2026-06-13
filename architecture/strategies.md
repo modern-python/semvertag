@@ -25,8 +25,9 @@ Every strategy carries three class-level strings and one method:
 
 The two concrete strategies are frozen, slotted, kw-only dataclasses, each
 holding a frozen pydantic config so the prefix/type tables are validated once
-at construction and immutable thereafter. They are registered for resolution in
-`semvertag/strategies/__init__.py`. `decide` sees one commit, never a range —
+at construction and immutable thereafter. They are registered for resolution in `semvertag/ioc.py` inside
+`StrategiesGroup`, where `current_strategy` dispatches via
+`_build_current_strategy` based on `settings.strategy`. `decide` sees one commit, never a range —
 the use-case only fetches the head of the default branch.
 
 ## branch-prefix

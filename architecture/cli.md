@@ -79,7 +79,7 @@ a `provider` and a `strategy`; calling it (`__call__(*, output, dry_run=False)
 2. list tags and pick the highest semver-parseable one (`_pick_latest_semver_tag`
    sorts by `semver.Version`; unparseable names are skipped);
 3. early no-bump exits — `no_tags` when there is no prior semver tag (it does
-   **not** seed an initial tag in v1.x), `already_tagged` when the head commit
+   **not** seed an initial tag in v1.0), `already_tagged` when the head commit
    already carries the latest tag;
 4. ask the strategy for a `Bump`; `Bump.NONE` exits with the strategy's own
    status/reason;
@@ -100,7 +100,7 @@ lines and a one-sentence result to stdout via `rich`, errors to stderr.
 `JsonOutput` is the machine path: `progress` is a no-op and `emit` writes a
 single compact JSON envelope (`dataclasses.asdict(result)`) to stdout. `--quiet`
 suppresses progress narrative on both while still emitting the final result.
-Every printed string passes through `redact` first (see providers.md).
+`RichOutput` redacts all output paths; `JsonOutput` redacts only its `error` path — `emit` writes the result envelope as unredacted JSON (see providers.md).
 
 ## Distribution wrappers
 

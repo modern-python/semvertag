@@ -90,9 +90,13 @@ misconfigured server cannot redirect a token-bearing request to another host.
 substring matching known token shapes — GitLab `glpat-…`, GitHub
 `github_pat_…` / `ghp_` / `gho_` / `ghu_` / `ghs_` / `ghr_…`, Bitbucket
 `ATBB…`, and any bare 32+-char hex run. It is applied at the output boundary:
-`RichOutput` and `JsonOutput` (`semvertag/_output.py`) run every progress,
-result, and error string through `redact` before printing, so a token that
-leaks into an error message or echoed URL never reaches the terminal or logs.
+`RichOutput` (`semvertag/_output.py`) runs `redact` on all three paths
+(`progress`, `emit`, `error`). `JsonOutput` is more selective: `progress` is a
+no-op (nothing is printed), `emit` writes the result envelope as raw JSON
+without redaction, and only `error` passes its message through `redact` before
+printing to stderr. A token that leaks into an error message never reaches the
+terminal, but a token embedded in a result field would appear unredacted in JSON
+output.
 
 ## Errors
 
