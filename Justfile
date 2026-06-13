@@ -25,6 +25,10 @@ publish:
     uv build
     uv publish --token $PYPI_TOKEN
 
+# Strict local docs build (no deploy). Mirrors CI's link/strict checks.
+docs-build:
+    uvx --with-requirements docs/requirements.txt mkdocs build --strict
+
 # Force-pushes built site to gh-pages; CI runs this on push to main.
 # Manual invocation from a stale checkout will roll the live site back.
 docs-deploy:
