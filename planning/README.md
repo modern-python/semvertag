@@ -70,12 +70,13 @@ carry **no** frontmatter — living prose, dated by git.
 
 ### Active
 
-- **[portable-planning-convention](changes/active/2026-06-13.01-portable-planning-convention/design.md)**
-  (2026-06-13) — Adopt the portable two-axis convention: `architecture/` truth
-  home + `changes/` bundles, migrate the 15 spec/plan pairs, fresh Index.
+_None._
 
 ### Archived (shipped)
 
+- **[portable-planning-convention](changes/archive/2026-06-13.01-portable-planning-convention/design.md)**
+  (#21, 2026-06-13) — Adopt the portable two-axis convention: `architecture/`
+  truth home + `changes/` bundles, migrate the 15 spec/plan pairs, fresh Index.
 - **[action-yml-dry-run](changes/archive/2026-06-09.03-action-yml-dry-run/design.md)**
   (#16, 2026-06-09) — Composite action `dry-run` input wired to the CLI flag.
 - **[dry-run-flag](changes/archive/2026-06-09.02-dry-run-flag/design.md)**

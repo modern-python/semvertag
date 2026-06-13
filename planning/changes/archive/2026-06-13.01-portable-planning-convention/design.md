@@ -1,11 +1,11 @@
 ---
-status: draft
+status: shipped
 date: 2026-06-13
 slug: portable-planning-convention
 supersedes: null
 superseded_by: null
-pr: null
-outcome: null
+pr: 21
+outcome: shipped (#21) — architecture/ truth home + changes/ bundles; 15 spec/plan pairs migrated; fresh Index
 ---
 
 # Design: Adopt the portable two-axis planning convention
