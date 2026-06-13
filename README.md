@@ -1,7 +1,16 @@
 # semvertag
 
+[![PyPI version](https://img.shields.io/pypi/v/semvertag.svg)](https://pypi.org/project/semvertag/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/semvertag.svg)](https://pypi.org/project/semvertag/)
+[![Downloads](https://img.shields.io/pypi/dm/semvertag.svg)](https://pypistats.org/packages/semvertag)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/modern-python/semvertag/actions/workflows/ci.yml)
 [![CI](https://github.com/modern-python/semvertag/actions/workflows/ci.yml/badge.svg)](https://github.com/modern-python/semvertag/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/modern-python/semvertag/branch/main/graph/badge.svg)](https://codecov.io/gh/modern-python/semvertag)
+[![License](https://img.shields.io/github/license/modern-python/semvertag.svg)](https://github.com/modern-python/semvertag/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/modern-python/semvertag)](https://github.com/modern-python/semvertag/stargazers)
+[![Context7](https://img.shields.io/badge/Context7-docs-blue)](https://context7.com/modern-python/semvertag)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
 
 Auto-tag your GitLab or GitHub repository with semantic version tags from CI — one tool, two strategies, two providers.
 
@@ -81,6 +90,13 @@ GitHub Enterprise setup, outputs, and troubleshooting.
 Both are configurable via env vars. See [docs](https://semvertag.modern-python.org)
 for the full configuration surface.
 
-## License
+## 📚 [Documentation](https://semvertag.modern-python.org)
 
-MIT
+## 📦 [PyPI](https://pypi.org/project/semvertag)
+
+## 📝 [License](LICENSE)
+
+## Part of `modern-python`
+
+Browse the full list of templates and libraries in
+[`modern-python`](https://github.com/modern-python) — see the org profile for the categorized index.
