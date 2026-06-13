@@ -18,7 +18,6 @@ pytest.xml
 dist/
 .python-version
 .venv
-plan.md
 /site/
 /.worktrees/
 uv.lock
