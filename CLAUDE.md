@@ -75,7 +75,7 @@ See `Justfile` for the canonical commands. Quick reference:
 ## What the codebase ships
 
 `semvertag` is a public-OSS auto-tagger for GitLab/GitHub/Bitbucket
-repositories. Two strategies (`branch-prefix`, `conventional-commits`), one
-provider implemented today (GitLab), distributed as a Python CLI plus a
-GitHub Actions wrapper (`action.yml`) and a GitLab CI Catalog component
+repositories. Two strategies (`branch-prefix`, `conventional-commits`), two
+providers implemented today (GitLab, GitHub), distributed as a Python CLI plus
+a GitHub Actions wrapper (`action.yml`) and a GitLab CI Catalog component
 (`templates/semvertag.yml`).
