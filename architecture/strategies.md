@@ -41,6 +41,11 @@ of the message (via `subject_line`, below) and applies, in order:
    request"`, so an ordinary GitHub PR merge-commit subject
    (`Merge pull request #N from owner/feature/...`) and a GitLab merge-commit
    subject both qualify under the defaults; a plain non-merge commit does not.
+   When `config.patch_on_non_merge_commit` is `True` (default `False`), this
+   non-merge case returns `Bump.PATCH` instead of `Bump.NONE`, so a direct push
+   to the default branch auto-tags a patch release. The flag governs only this
+   exit — a merge commit with an unrecognized prefix (step 4) still returns
+   `Bump.NONE`.
 2. If any string in `config.minor` appears in the subject, return `Bump.MINOR`.
    Default: `("feature/",)`.
 3. If any string in `config.patch` appears, return `Bump.PATCH`. Default:

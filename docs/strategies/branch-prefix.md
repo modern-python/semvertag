@@ -30,7 +30,9 @@ means:
 
 - Standard `git merge feature/foo` → subject `Merge branch 'feature/foo' into main` → bump = minor ✓
 - GitHub's `Merge pull request #N from user/feature/foo` → bump = minor ✓
-- Direct pushes to the default branch → bump = none.
+- Direct pushes to the default branch → bump = none, unless
+  `patch_on_non_merge_commit` is enabled (see below), in which case
+  bump = patch.
 
 The `merge_mark_texts` tuple is configurable (defaults to
 `("Merge branch", "Merge pull request")`); adapt it for non-default
@@ -46,6 +48,11 @@ The strategy reads its prefixes from the application's settings layer:
   `("bugfix/", "hotfix/")`).
 - `merge_mark_texts` — tuple of substrings that mark a subject as a
   merge commit (default `("Merge branch", "Merge pull request")`).
+- `patch_on_non_merge_commit` — when `true`, a plain (non-merge) commit on
+  the default branch bumps patch instead of producing no bump (default
+  `false`). Set via `SEMVERTAG_BRANCH_PREFIX__PATCH_ON_NON_MERGE_COMMIT=true`.
+  Affects only the non-merge case; a merge commit with an unrecognized prefix
+  still produces no bump.
 
 These are set via the same pydantic-settings env-var mechanism used
 for tokens / endpoints — see the provider docs for the variable
