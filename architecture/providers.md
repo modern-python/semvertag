@@ -68,7 +68,7 @@ modern-di, which is safe because httpx2 connection pools are lazy — the unused
 client opens no sockets. Clients are closed by a modern-di cache finalizer
 (`_close_client`). Responses are decoded by httpware against pydantic
 `response_model`s (`_ProjectResponse`, `_CommitList`, `_TagList`, …) via the
-`get` / `send_with_response` helpers; a decode failure surfaces as
+`get` / `get_with_response` helpers; a decode failure surfaces as
 `httpware.DecodeError` and is translated to `ProviderAPIError`.
 
 Both clients also set a 1 MiB `max_error_body_bytes` cap (`_MAX_ERROR_BODY_BYTES`
