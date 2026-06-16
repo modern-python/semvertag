@@ -88,10 +88,7 @@ class GitHubProvider:
         params: dict[str, typing.Any] | None = {"per_page": _TAGS_PER_PAGE, "page": 1}
         for _ in range(_MAX_TAG_PAGES):
             try:
-                response, page = self.http.send_with_response(
-                    self.http.build_request("GET", url, params=params),
-                    response_model=_TagList,
-                )
+                response, page = self.http.get_with_response(url, params=params, response_model=_TagList)
             except httpware.ClientError as exc:
                 raise _errors.translate_github(exc, repo=self.repo) from exc
             tags.extend(Tag(name=item.name, commit_sha=item.commit.sha) for item in page.root)
