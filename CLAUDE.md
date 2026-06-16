@@ -66,11 +66,13 @@ belong to the retired BMad workflow.
 See `Justfile` for the canonical commands. Quick reference:
 
 - `just lint-ci` — eof-fixer, ruff format check, ruff check, ty check
-- `just test` — pytest with coverage
-- `just test-branch` — pytest with branch coverage
-- `just test-branch-strategies` / `just test-cc-strategies`
-  — 100% branch coverage gates on specific modules
-- `mkdocs build --strict` — docs build gate
+  (check-only; `just lint` is the autofixing variant)
+- `just test` — pytest. The `addopts` in `pyproject.toml` add `--cov-branch`
+  with a project-wide `fail_under = 100` gate, so every branch (strategy
+  modules included) must be covered. Pass args through, e.g.
+  `just test tests/unit/test_branch_prefix_strategy.py -q`.
+- `just docs-build` — strict mkdocs build (`mkdocs build --strict`), the docs
+  gate.
 
 ## What the codebase ships
 
