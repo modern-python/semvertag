@@ -90,6 +90,18 @@ GitHub Enterprise setup, outputs, and troubleshooting.
 Both are configurable via env vars. See [docs](https://semvertag.modern-python.org)
 for the full configuration surface.
 
+## Built with
+
+semvertag stands on other `modern-python` libraries:
+
+- **[modern-di-typer](https://github.com/modern-python/modern-di-typer)** —
+  dependency-injection wiring for the Typer CLI. semvertag resolves its
+  settings, API providers, and bump strategies through a `modern_di` container
+  ([`semvertag/ioc.py`](semvertag/ioc.py)).
+- **[httpware](https://github.com/modern-python/httpware)** — the resilient
+  HTTP client both providers use for the GitLab/GitHub REST calls (retries,
+  timeouts, typed decoding, secret redaction).
+
 ## 📚 [Documentation](https://semvertag.modern-python.org)
 
 ## 📦 [PyPI](https://pypi.org/project/semvertag)
