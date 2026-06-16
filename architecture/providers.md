@@ -71,6 +71,14 @@ client opens no sockets. Clients are closed by a modern-di cache finalizer
 `get` / `send_with_response` helpers; a decode failure surfaces as
 `httpware.DecodeError` and is translated to `ProviderAPIError`.
 
+Both clients also set a 1 MiB `max_error_body_bytes` cap (`_MAX_ERROR_BODY_BYTES`
+in `semvertag/ioc.py`): httpware raises `ResponseTooLargeError` on a 4xx/5xx
+whose declared `Content-Length` exceeds the cap, before reading the body — a
+defensive bound against a hostile or malfunctioning endpoint. That error is an
+`httpware.ClientError` (not a `StatusError`), so `_translate_transport` maps it
+to `ProviderAPIError`. Real GitLab/GitHub error bodies are tiny JSON and never
+approach the cap.
+
 ## Link-header pagination
 
 Tag listing walks RFC 8288 `Link` headers. `semvertag/_link_pagination.py`
