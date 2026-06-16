@@ -72,3 +72,13 @@ def test_container_resolves_gitlab_provider_when_settings_provider_is_gitlab() -
         provider = ioc.container.resolve_provider(ioc.ProvidersGroup.current_provider)
         assert isinstance(provider, GitLabProvider)
         assert provider.name == "gitlab"
+
+
+def test_gitlab_client_is_built_with_error_body_cap() -> None:
+    client: typing.Final = ioc._build_gitlab_client(_settings())
+    assert client._max_error_body_bytes == ioc._MAX_ERROR_BODY_BYTES
+
+
+def test_github_client_is_built_with_error_body_cap() -> None:
+    client: typing.Final = ioc._build_github_client(_settings())
+    assert client._max_error_body_bytes == ioc._MAX_ERROR_BODY_BYTES

@@ -18,6 +18,7 @@ _GITLAB_TOKEN_HEADER: typing.Final = "PRIVATE-TOKEN"
 _GITHUB_ACCEPT: typing.Final = "application/vnd.github+json"
 _GITHUB_API_VERSION: typing.Final = "2022-11-28"
 _RETRY_STATUS_CODES: typing.Final = frozenset({408, 429, 500, 502, 503, 504})
+_MAX_ERROR_BODY_BYTES: typing.Final = 1024 * 1024  # 1 MiB — defensive cap on 4xx/5xx error bodies
 
 
 def _build_gitlab_client(settings: Settings) -> httpware.Client:
@@ -26,6 +27,7 @@ def _build_gitlab_client(settings: Settings) -> httpware.Client:
         timeout=settings.request_timeout,
         headers={_GITLAB_TOKEN_HEADER: settings.gitlab.token.get_secret_value()},
         middleware=[httpware.Retry(retry_status_codes=_RETRY_STATUS_CODES)],
+        max_error_body_bytes=_MAX_ERROR_BODY_BYTES,
     )
 
 
@@ -39,6 +41,7 @@ def _build_github_client(settings: Settings) -> httpware.Client:
             "X-GitHub-Api-Version": _GITHUB_API_VERSION,
         },
         middleware=[httpware.Retry(retry_status_codes=_RETRY_STATUS_CODES)],
+        max_error_body_bytes=_MAX_ERROR_BODY_BYTES,
     )
 
 
