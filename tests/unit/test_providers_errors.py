@@ -285,3 +285,29 @@ def test_translate_create_tag_github_other_422_becomes_generic_config_error() ->
     assert isinstance(result, ConfigError)
     assert "v1.2.3" not in str(result)
     assert "422" in str(result)
+
+
+def test_translate_gitlab_response_too_large_becomes_provider_api_error() -> None:
+    exc = httpware.ResponseTooLargeError(status_code=413, limit=1_048_576, content_length=5_000_000)
+    result = translate_gitlab(exc, project_id=_PROJECT_ID)
+    assert isinstance(result, ProviderAPIError)
+    assert "GitLab" in str(result)
+    assert "5000000" in str(result)
+    assert "1048576" in str(result)
+
+
+def test_translate_github_response_too_large_becomes_provider_api_error() -> None:
+    exc = httpware.ResponseTooLargeError(status_code=413, limit=1_048_576, content_length=5_000_000)
+    result = translate_github(exc, repo="owner/repo")
+    assert isinstance(result, ProviderAPIError)
+    assert "GitHub" in str(result)
+    assert "5000000" in str(result)
+    assert "1048576" in str(result)
+
+
+def test_translate_response_too_large_with_undeclared_length_omits_byte_count() -> None:
+    exc = httpware.ResponseTooLargeError(status_code=413, limit=1_048_576, content_length=None)
+    result = translate_gitlab(exc, project_id=_PROJECT_ID)
+    assert isinstance(result, ProviderAPIError)
+    assert "undeclared number of bytes" in str(result)
+    assert "1048576" in str(result)

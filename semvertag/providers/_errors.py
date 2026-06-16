@@ -43,6 +43,12 @@ def _translate_transport(exc: httpware.ClientError, *, provider_label: str) -> E
         return ProviderAPIError(f"{provider_label} request timed out. Try again or increase SEMVERTAG_REQUEST_TIMEOUT.")
     if isinstance(exc, httpware.RetryBudgetExhaustedError):
         return ProviderAPIError(f"{provider_label} retries exhausted after {exc.attempts} attempts. Try again later.")
+    if isinstance(exc, httpware.ResponseTooLargeError):
+        size_part = f"{exc.content_length} bytes" if exc.content_length is not None else "an undeclared number of bytes"
+        return ProviderAPIError(
+            f"{provider_label} returned an error response body of {size_part}, "
+            f"exceeding the {exc.limit}-byte cap (HTTP {exc.status_code}); refusing to read it."
+        )
     if isinstance(exc, httpware.NetworkError):
         return ProviderAPIError(f"{provider_label} unreachable. Check network connectivity.")
     return ProviderAPIError(f"{provider_label} request failed: {type(exc).__name__}")
