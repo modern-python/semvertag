@@ -1,9 +1,9 @@
 ---
-status: draft
+status: shipped
 date: 2026-06-16
 slug: httpware-max-error-body-bytes
 spec: httpware-max-error-body-bytes
-pr: null
+pr: 26
 ---
 
 # httpware-max-error-body-bytes — implementation plan

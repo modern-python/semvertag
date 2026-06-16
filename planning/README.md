@@ -74,6 +74,9 @@ _None._
 
 ### Archived (shipped)
 
+- **[httpware-max-error-body-bytes](changes/archive/2026-06-16.03-httpware-max-error-body-bytes/design.md)**
+  (#26, 2026-06-16) — Cap provider error-body reads at 1 MiB; translate
+  `ResponseTooLargeError` to `ProviderAPIError`.
 - **[branch-prefix-patch-on-non-merge](changes/archive/2026-06-16.02-branch-prefix-patch-on-non-merge/design.md)**
   (#24, 2026-06-16) — Opt-in `patch_on_non_merge_commit` flag: a non-merge HEAD
   commit bumps patch instead of nothing.
