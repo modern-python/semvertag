@@ -19,6 +19,7 @@ class BranchPrefixConfig(pydantic.BaseModel):
         default=("Merge branch", "Merge pull request"),
         min_length=1,
     )
+    patch_on_non_merge_commit: bool = False
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
@@ -31,7 +32,9 @@ class BranchPrefixStrategy:
     def decide(self, commit: Commit) -> Bump:
         subject: typing.Final = subject_line(commit.message)
         if not any(mark in subject for mark in self.config.merge_mark_texts):
-            return Bump.NONE
+            # Non-merge commit: opt-in to a patch bump, else no bump
+            # (the no_bump_* ClassVars only surface on the Bump.NONE path).
+            return Bump.PATCH if self.config.patch_on_non_merge_commit else Bump.NONE
         if any(prefix in subject for prefix in self.config.minor):
             return Bump.MINOR
         if any(prefix in subject for prefix in self.config.patch):

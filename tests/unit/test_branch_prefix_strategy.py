@@ -143,3 +143,33 @@ def test_ignores_body_prefixes_when_subject_is_an_unrecognized_merge() -> None:
 def test_returns_minor_when_subject_is_a_feature_merge_with_trailing_body() -> None:
     message: typing.Final = "Merge branch 'feature/new-thing' into main\n\nReviewed-by: bob"
     assert DEFAULT_STRATEGY.decide(_commit(message)) is Bump.MINOR
+
+
+_FALLBACK_STRATEGY: typing.Final = BranchPrefixStrategy(
+    config=BranchPrefixConfig(patch_on_non_merge_commit=True),
+)
+
+
+@pytest.mark.parametrize("message", [message for message, _ in _NON_MERGE_CASES])
+def test_returns_patch_for_non_merge_commit_when_flag_enabled(message: str) -> None:
+    assert _FALLBACK_STRATEGY.decide(_commit(message)) is Bump.PATCH
+
+
+@pytest.mark.parametrize(
+    ("message", "expected"),
+    [
+        ("Merge branch 'feature/x' into main", Bump.MINOR),
+        ("Merge branch 'bugfix/y' into main", Bump.PATCH),
+    ],
+)
+def test_flag_leaves_recognized_merge_paths_unchanged(message: str, expected: Bump) -> None:
+    assert _FALLBACK_STRATEGY.decide(_commit(message)) is expected
+
+
+@pytest.mark.parametrize("message", [message for message, _ in _UNRECOGNIZED_MERGE_CASES])
+def test_flag_leaves_unrecognized_merge_as_none(message: str) -> None:
+    assert _FALLBACK_STRATEGY.decide(_commit(message)) is Bump.NONE
+
+
+def test_patch_on_non_merge_commit_defaults_to_false() -> None:
+    assert BranchPrefixConfig().patch_on_non_merge_commit is False
