@@ -1,9 +1,9 @@
 ---
-status: draft
+status: shipped
 date: 2026-06-16
 slug: branch-prefix-patch-on-non-merge
 spec: branch-prefix-patch-on-non-merge
-pr: null
+pr: 24
 ---
 
 # branch-prefix-patch-on-non-merge — implementation plan

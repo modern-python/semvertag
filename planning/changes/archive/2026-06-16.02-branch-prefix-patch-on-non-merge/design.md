@@ -1,11 +1,13 @@
 ---
-status: draft
+status: shipped
 date: 2026-06-16
 slug: branch-prefix-patch-on-non-merge
 supersedes: null
 superseded_by: null
-pr: null
-outcome: null
+pr: 24
+outcome: Shipped. Opt-in patch_on_non_merge_commit flag (default False) added to
+  branch-prefix; a non-merge HEAD commit bumps patch when enabled. Conclusions
+  promoted into architecture/strategies.md.
 ---
 
 # Design: Opt-in patch bump for non-merge commits (branch-prefix)

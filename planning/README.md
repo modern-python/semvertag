@@ -74,6 +74,12 @@ _None._
 
 ### Archived (shipped)
 
+- **[branch-prefix-patch-on-non-merge](changes/archive/2026-06-16.02-branch-prefix-patch-on-non-merge/design.md)**
+  (#24, 2026-06-16) — Opt-in `patch_on_non_merge_commit` flag: a non-merge HEAD
+  commit bumps patch instead of nothing.
+- **[httpware-0.12-get-with-response](changes/archive/2026-06-16.01-httpware-0.12-get-with-response/change.md)**
+  (#24, 2026-06-16) — Bump httpware to 0.12.0; adopt `get_with_response` at the
+  pagination call sites.
 - **[portable-planning-convention](changes/archive/2026-06-13.01-portable-planning-convention/design.md)**
   (#21, 2026-06-13) — Adopt the portable two-axis convention: `architecture/`
   truth home + `changes/` bundles, migrate the 15 spec/plan pairs, fresh Index.
