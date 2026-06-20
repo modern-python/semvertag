@@ -28,3 +28,7 @@ publish:
 # Strict local docs build (no deploy). Mirrors CI's link/strict checks.
 docs-build:
     uvx --with-requirements docs/requirements.txt mkdocs build --strict
+
+# Print the planning change index (grouped by status) to stdout.
+index:
+    uv run python planning/index.py
