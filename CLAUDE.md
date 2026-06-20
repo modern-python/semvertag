@@ -11,15 +11,15 @@ conventions and the change Index, and [`planning/_templates/`](planning/_templat
 for copy-and-fill starters.
 
 Per feature: brainstorming → spec in
-`planning/changes/active/YYYY-MM-DD.NN-<slug>/design.md` → writing-plans → plan
+`planning/changes/YYYY-MM-DD.NN-<slug>/design.md` → writing-plans → plan
 in the same bundle's `plan.md` → executing-plans / subagent-driven-development →
 requesting-code-review → finishing-a-development-branch. `<slug>` is a
 kebab-case description, not a story ID; `.NN` is a zero-padded intra-day counter
-that breaks same-date ties. On merge the bundle moves to
-`planning/changes/archive/` with `status: shipped`, `pr:`, and `outcome:`
-filled, **and the change promotes its conclusions into the affected
-`architecture/<capability>.md`** — that hand-edit is what keeps `architecture/`
-true.
+that breaks same-date ties. The implementing PR sets `status: shipped` and fills
+`pr` / `outcome` in the branch, alongside the code and the
+`architecture/<capability>.md` promotion — that hand-edit is the only ship-time
+step; there is no folder move. The change listing is generated — run `just index`
+(no committed Index).
 
 **Three lanes.** Scale the artifact to the change. **Full** — a `design.md` +
 `plan.md` bundle — for real design judgment, a new file/module, a public-API
@@ -39,7 +39,7 @@ subagent before landing (`superpowers:requesting-code-review`).
 Planning artifacts live under `planning/` (not under `docs/`, so they're
 excluded from the mkdocs site automatically). When superpowers skills default to
 `docs/superpowers/specs/` or `docs/superpowers/plans/`, use the change bundle
-under `planning/changes/active/` here instead.
+under `planning/changes/` here instead.
 
 ## Commit messages
 
