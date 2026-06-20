@@ -1,5 +1,5 @@
 ---
-status: superseded
+status: shipped
 date: 2026-06-13
 slug: portable-planning-convention
 summary: "Adopt the portable two-axis convention: `architecture/` truth home + `changes/` bundles, migrate the 15 spec/plan pairs, fresh Index."
