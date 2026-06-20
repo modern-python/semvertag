@@ -1,12 +1,15 @@
 [project]
 name = "semvertag"
-description = "Auto-tag GitLab and GitHub repos with semantic version tags — one tool, two strategies, two providers."
+description = "Auto-tag GitHub & GitLab repos with semantic version tags from CI"
 authors = [{ name = "Artur Shiriev", email = "me@shiriev.ru" }]
 requires-python = ">=3.11,<4"
 license = "MIT"
 readme = "README.md"
-keywords = ["semver", "gitlab", "github", "ci", "auto-tag", "conventional-commits"]
+keywords = ["semver", "versioning", "git", "github", "gitlab", "ci", "conventional-commits", "auto-tag", "cli", "python"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -29,8 +32,11 @@ dependencies = [
 semvertag = "semvertag.__main__:main"
 
 [project.urls]
-repository = "https://github.com/modern-python/semvertag"
-docs = "https://semvertag.modern-python.org"
+Homepage = "https://semvertag.modern-python.org"
+Documentation = "https://semvertag.modern-python.org"
+Repository = "https://github.com/modern-python/semvertag"
+Issues = "https://github.com/modern-python/semvertag/issues"
+Changelog = "https://github.com/modern-python/semvertag/releases"
 
 [build-system]
 requires = ["uv_build>=0.11,<1"]
