@@ -19,7 +19,11 @@ that breaks same-date ties. The implementing PR sets `status: shipped` and fills
 `pr` / `outcome` in the branch, alongside the code and the
 `architecture/<capability>.md` promotion — that hand-edit is the only ship-time
 step; there is no folder move. The change listing is generated — run `just index`
-(no committed Index).
+(no committed Index). A design decision taken **without** a code change —
+especially a candidate **rejected** with a load-bearing reason — is recorded as
+`planning/decisions/YYYY-MM-DD-<slug>.md` (the `decision.md` template, frontmatter
+`status: accepted|superseded`), each with a **Revisit trigger** so future reviews
+don't re-litigate it; listed by `just index`.
 
 **Three lanes.** Scale the artifact to the change. **Full** — a `design.md` +
 `plan.md` bundle — for real design judgment, a new file/module, a public-API
