@@ -40,7 +40,11 @@ _PAGINATION_CAP: typing.Final = 100
 _TOKEN_HEADER: typing.Final = "PRIVATE-TOKEN"
 
 
-def _make_provider(handler: HandlerCallable) -> tuple[GitLabProvider, httpx2.Client]:
+def _make_provider(
+    handler: HandlerCallable,
+    *,
+    default_branch: str | None = None,
+) -> tuple[GitLabProvider, httpx2.Client]:
     transport: typing.Final = httpx2.MockTransport(handler)
     config: typing.Final = GitLabConfig(endpoint=GITLAB_ENDPOINT, token=pydantic.SecretStr(GITLAB_TOKEN))
     inner_client: typing.Final = httpx2.Client(
@@ -49,7 +53,9 @@ def _make_provider(handler: HandlerCallable) -> tuple[GitLabProvider, httpx2.Cli
         headers={_TOKEN_HEADER: config.token.get_secret_value()},
     )
     http: typing.Final = httpware.Client(httpx2_client=inner_client)
-    provider: typing.Final = GitLabProvider(config=config, project_id=GITLAB_PROJECT_ID, http=http)
+    provider: typing.Final = GitLabProvider(
+        config=config, project_id=GITLAB_PROJECT_ID, http=http, default_branch=default_branch
+    )
     # Return the inner httpx2.Client so tests can use it as a context manager
     # for teardown; httpware.Client doesn't own its lifecycle when constructed via httpx2_client=.
     return provider, inner_client
@@ -78,6 +84,41 @@ def test_returns_main_when_default_branch_endpoint_responds_200(
     gitlab_provider: GitLabProvider,
 ) -> None:
     assert gitlab_provider.get_default_branch() == "main"
+
+
+def test_get_default_branch_returns_override_without_calling_api() -> None:
+    project_called: typing.Final = {"v": False}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if request.url.path == _PROJECT_PATH:
+            project_called["v"] = True
+        return default_handler(request)
+
+    provider, client = _make_provider(handler, default_branch="develop")
+    with client:
+        assert provider.get_default_branch() == "develop"
+    assert project_called["v"] is False
+
+
+def test_get_latest_commit_uses_override_branch_and_skips_default_branch_call() -> None:
+    project_called: typing.Final = {"v": False}
+    captured_params: dict[str, str] = {}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if request.url.path == _PROJECT_PATH:
+            project_called["v"] = True
+            return httpx2.Response(200, json={"default_branch": "main"})
+        if request.url.path == _COMMITS_PATH:
+            captured_params.update(dict(request.url.params))
+            return httpx2.Response(200, json=[{"id": "deadbeef", "message": "msg"}])
+        return httpx2.Response(404)
+
+    provider, client = _make_provider(handler, default_branch="develop")
+    with client:
+        commit = provider.get_latest_commit_on_default_branch()
+    assert project_called["v"] is False
+    assert captured_params["ref_name"] == "develop"
+    assert commit == Commit(sha="deadbeef", message="msg")
 
 
 def test_raises_config_error_when_default_branch_is_null() -> None:

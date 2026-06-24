@@ -47,8 +47,11 @@ class GitLabProvider:
     config: GitLabConfig
     project_id: int
     http: httpware.Client
+    default_branch: str | None = None
 
     def get_default_branch(self) -> str:
+        if self.default_branch is not None:
+            return self.default_branch
         try:
             project = self.http.get(
                 f"{_API_PREFIX}/{self.project_id}",

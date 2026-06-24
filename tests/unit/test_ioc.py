@@ -74,6 +74,24 @@ def test_container_resolves_gitlab_provider_when_settings_provider_is_gitlab() -
         assert provider.name == "gitlab"
 
 
+def test_github_provider_receives_default_branch_override() -> None:
+    settings = Settings(provider="github", repo="owner/repo", default_branch="develop")
+    with ioc.container:
+        ioc.container.set_context(Settings, settings)
+        provider = ioc.container.resolve_provider(ioc.ProvidersGroup.current_provider)
+        assert isinstance(provider, GitHubProvider)
+        assert provider.default_branch == "develop"
+
+
+def test_gitlab_provider_receives_default_branch_override() -> None:
+    settings = Settings(provider="gitlab", project_id=999, default_branch="develop")
+    with ioc.container:
+        ioc.container.set_context(Settings, settings)
+        provider = ioc.container.resolve_provider(ioc.ProvidersGroup.current_provider)
+        assert isinstance(provider, GitLabProvider)
+        assert provider.default_branch == "develop"
+
+
 def test_gitlab_client_is_built_with_response_body_cap() -> None:
     client: typing.Final = ioc._build_gitlab_client(_settings())
     assert client._max_response_body_bytes == ioc._MAX_RESPONSE_BODY_BYTES

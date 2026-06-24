@@ -56,7 +56,11 @@ def _github_default_handler(request: httpx2.Request) -> httpx2.Response:
     return httpx2.Response(404, json={"message": "Not Found"})
 
 
-def _make_provider(handler: HandlerCallable) -> tuple[GitHubProvider, httpx2.Client]:
+def _make_provider(
+    handler: HandlerCallable,
+    *,
+    default_branch: str | None = None,
+) -> tuple[GitHubProvider, httpx2.Client]:
     transport = httpx2.MockTransport(handler)
     config = GitHubConfig(endpoint=GITHUB_ENDPOINT, token=pydantic.SecretStr(GITHUB_TOKEN))
     inner = httpx2.Client(
@@ -69,7 +73,7 @@ def _make_provider(handler: HandlerCallable) -> tuple[GitHubProvider, httpx2.Cli
         },
     )
     client = httpware.Client(httpx2_client=inner)
-    provider = GitHubProvider(config=config, repo=GITHUB_REPO, http=client)
+    provider = GitHubProvider(config=config, repo=GITHUB_REPO, http=client, default_branch=default_branch)
     # Return the inner httpx2.Client so tests can use it as a context manager
     # for teardown; httpware.Client doesn't own its lifecycle when constructed via httpx2_client=.
     return provider, inner
@@ -98,6 +102,41 @@ def test_get_default_branch_returns_value() -> None:
     provider, client = _make_provider(_github_default_handler)
     with client:
         assert provider.get_default_branch() == _DEFAULT_BRANCH
+
+
+def test_get_default_branch_returns_override_without_calling_api() -> None:
+    repo_called = {"v": False}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if request.url.path == _REPO_PATH:
+            repo_called["v"] = True
+        return _github_default_handler(request)
+
+    provider, client = _make_provider(handler, default_branch="develop")
+    with client:
+        assert provider.get_default_branch() == "develop"
+    assert repo_called["v"] is False
+
+
+def test_get_latest_commit_uses_override_branch_and_skips_default_branch_call() -> None:
+    repo_called = {"v": False}
+    captured_params: dict[str, str] = {}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        if request.url.path == _REPO_PATH:
+            repo_called["v"] = True
+            return httpx2.Response(200, json={"default_branch": "main"})
+        if request.url.path == _COMMITS_PATH:
+            captured_params.update(dict(request.url.params))
+            return httpx2.Response(200, json=[{"sha": "deadbeef", "commit": {"message": "msg"}}])
+        return httpx2.Response(404)
+
+    provider, client = _make_provider(handler, default_branch="develop")
+    with client:
+        commit = provider.get_latest_commit_on_default_branch()
+    assert repo_called["v"] is False
+    assert captured_params["sha"] == "develop"
+    assert commit == Commit(sha="deadbeef", message="msg")
 
 
 def test_get_default_branch_raises_config_error_on_404() -> None:

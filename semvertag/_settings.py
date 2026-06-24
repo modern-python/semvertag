@@ -83,7 +83,7 @@ class Settings(pydantic_settings.BaseSettings):
         default=None,
         validation_alias=pydantic.AliasChoices("SEMVERTAG_PROVIDER", "PROVIDER"),
     )
-    default_branch: str | None = None
+    default_branch: str | None = pydantic.Field(default=None, min_length=1)
     request_timeout: float = pydantic.Field(default=8.0, gt=0)
     project_id: int | None = pydantic.Field(
         default=None,

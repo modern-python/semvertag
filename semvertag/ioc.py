@@ -63,9 +63,16 @@ def _build_current_provider(
     """
     if settings.provider == "github":
         assert settings.repo is not None, "provider=github invariant: validator guarantees repo is set"  # noqa: S101
-        return GitHubProvider(config=settings.github, repo=settings.repo, http=github_client)
+        return GitHubProvider(
+            config=settings.github, repo=settings.repo, http=github_client, default_branch=settings.default_branch
+        )
     assert settings.project_id is not None, "provider=gitlab invariant: validator guarantees project_id is set"  # noqa: S101
-    return GitLabProvider(config=settings.gitlab, project_id=settings.project_id, http=gitlab_client)
+    return GitLabProvider(
+        config=settings.gitlab,
+        project_id=settings.project_id,
+        http=gitlab_client,
+        default_branch=settings.default_branch,
+    )
 
 
 def _build_branch_prefix_strategy(settings: Settings) -> BranchPrefixStrategy:
