@@ -3,7 +3,7 @@ status: draft
 date: 2026-06-24
 slug: closed-outcome-type
 spec: closed-outcome-type
-pr: null
+pr: 34
 ---
 
 # closed-outcome-type — implementation plan

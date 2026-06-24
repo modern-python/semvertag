@@ -5,7 +5,7 @@ slug: closed-outcome-type
 summary: Replace the free-form run-status strings with a closed Outcome sum type the renderers dispatch over exhaustively.
 supersedes: null
 superseded_by: null
-pr: null
+pr: 34
 outcome: null
 ---
 
