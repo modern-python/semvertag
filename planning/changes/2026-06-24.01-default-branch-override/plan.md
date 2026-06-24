@@ -33,13 +33,13 @@ TDD throughout: red (failing tests) → green (implement) → refactor.
   repo/project endpoint; commit lookup uses the override and skips the
   default-branch GET.
 - [ ] IoC test: `_build_current_provider` propagates `settings.default_branch`.
-- [ ] Settings test: empty `default_branch` rejected.
+- [ ] Settings test: blank `default_branch` (empty/whitespace) → `None`; padded name stripped.
 - [ ] Confirm the new provider tests fail (field/short-circuit absent).
 
 ### Task 2: Implement (green)
 
 **Files:**
-- Modify: `semvertag/_settings.py` — `default_branch: ... = Field(default=None, min_length=1)`
+- Modify: `semvertag/_settings.py` — field validator normalizing blank `default_branch` → `None`
 - Modify: `semvertag/providers/github.py` — add field + short-circuit
 - Modify: `semvertag/providers/gitlab.py` — add field + short-circuit
 - Modify: `semvertag/ioc.py` — wire `default_branch=settings.default_branch`

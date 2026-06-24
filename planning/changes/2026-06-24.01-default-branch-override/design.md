@@ -43,14 +43,17 @@ an always-paid API call).
 
 ## Design
 
-### 1. Reject an empty override at the settings edge
+### 1. Treat a blank override as unset at the settings edge
 
-`Settings.default_branch` becomes `Field(default=None, min_length=1)`. An
-explicit empty string (`--default-branch ""`) is degenerate input that would
-otherwise produce a confusing downstream API error; rejecting it once at the
-boundary yields the existing `ValidationError → ConfigError` path. When unset it
-stays `None`. This keeps the provider's short-circuit a dead-simple
-`is not None` check.
+A field validator on `Settings.default_branch` strips the value and maps an
+empty or whitespace-only string to `None`. A declared-but-empty
+`SEMVERTAG_DEFAULT_BRANCH=` (a common CI idiom, materialized by pydantic-settings
+as `""`) therefore means "no override" — the tool falls back to the forge API
+rather than aborting. (An earlier draft used `min_length=1`, which turned that
+previously-harmless empty env var into a hard `ValidationError`; normalizing
+blank-to-`None` avoids that regression.) Stripping also means a stray-padded
+name still resolves. This keeps the provider's short-circuit a dead-simple
+`is not None` check, since blank never reaches it.
 
 ### 2. Providers gain an optional `default_branch`
 
@@ -82,7 +85,8 @@ into whichever provider it constructs.
   Existing tests (no override → `None`) prove the API path is unchanged.
 - **IoC (unit):** `_build_current_provider` propagates `settings.default_branch`
   to the constructed provider for both providers.
-- **Settings (unit):** an empty `default_branch` is rejected.
+- **Settings (unit):** a blank `default_branch` (empty or whitespace) becomes
+  `None`; a padded name is stripped.
 - **Gates:** `just lint-ci` and `just test` (100% branch) stay green; the new
   `is not None` branch is covered both ways.
 
@@ -90,6 +94,6 @@ into whichever provider it constructs.
 
 Low. When the override is unset (the overwhelmingly common case) the field is
 `None` and every code path is byte-identical to today. The only new behavior is
-gated behind a non-`None` override. The empty-string rejection is the one
-visible behavior change at the settings edge, and no existing test exercises an
-empty branch.
+gated behind a non-`None` override. Blank values normalize to `None` (unset), so
+a declared-but-empty env var keeps working as a no-op rather than aborting; no
+existing test exercises an empty branch.

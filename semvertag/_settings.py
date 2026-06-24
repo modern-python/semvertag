@@ -83,7 +83,7 @@ class Settings(pydantic_settings.BaseSettings):
         default=None,
         validation_alias=pydantic.AliasChoices("SEMVERTAG_PROVIDER", "PROVIDER"),
     )
-    default_branch: str | None = pydantic.Field(default=None, min_length=1)
+    default_branch: str | None = None
     request_timeout: float = pydantic.Field(default=8.0, gt=0)
     project_id: int | None = pydantic.Field(
         default=None,
@@ -97,6 +97,15 @@ class Settings(pydantic_settings.BaseSettings):
     github: GitHubConfig = pydantic.Field(default_factory=GitHubConfig)
     branch_prefix: BranchPrefixConfig = pydantic.Field(default_factory=BranchPrefixConfig)
     conventional_commits: ConventionalCommitsConfig = pydantic.Field(default_factory=ConventionalCommitsConfig)
+
+    @pydantic.field_validator("default_branch")
+    @classmethod
+    def _blank_default_branch_is_unset(cls, value: str | None) -> str | None:
+        # An empty or whitespace-only override (e.g. a declared-but-empty
+        # SEMVERTAG_DEFAULT_BRANCH in CI) means "no override" — fall back to the
+        # forge API, never abort. Strip so a stray-padded name still resolves.
+        stripped: typing.Final = (value or "").strip()
+        return stripped or None
 
     @pydantic.field_validator("request_timeout")
     @classmethod
