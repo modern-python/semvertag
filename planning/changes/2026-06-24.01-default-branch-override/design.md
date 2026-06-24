@@ -5,7 +5,7 @@ slug: default-branch-override
 summary: Make the advertised --default-branch / SEMVERTAG_DEFAULT_BRANCH override actually take effect.
 supersedes: null
 superseded_by: null
-pr: null
+pr: 33
 outcome: null
 ---
 

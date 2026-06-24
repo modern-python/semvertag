@@ -3,7 +3,7 @@ status: draft
 date: 2026-06-24
 slug: default-branch-override
 spec: default-branch-override
-pr: null
+pr: 33
 ---
 
 # default-branch-override — implementation plan
