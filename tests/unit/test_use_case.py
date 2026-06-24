@@ -3,7 +3,8 @@ import typing
 
 import pytest
 
-from semvertag._types import Bump, CheckResult, Commit, RunResult, Tag
+from semvertag._outcome import AlreadyTagged, Created, DryRun, NoBump, NoTags, Outcome
+from semvertag._types import Bump, CheckResult, Commit, Tag
 from semvertag._use_case import SemvertagUseCase
 
 
@@ -28,14 +29,14 @@ _NO_BUMP_REASON_BY_STRATEGY: typing.Final = {
 @dataclasses.dataclass(slots=True, kw_only=True)
 class _RecordingOutput:
     progress_messages: list[str] = dataclasses.field(default_factory=list)
-    emitted_results: list[RunResult] = dataclasses.field(default_factory=list)
+    emitted: list[tuple[Outcome, str]] = dataclasses.field(default_factory=list)
     error_messages: list[str] = dataclasses.field(default_factory=list)
 
     def progress(self, message: str) -> None:
         self.progress_messages.append(message)
 
-    def emit(self, result: RunResult) -> None:
-        self.emitted_results.append(result)
+    def emit(self, outcome: Outcome, *, strategy: str) -> None:
+        self.emitted.append((outcome, strategy))
 
     def error(self, message: str) -> None:
         self.error_messages.append(message)
@@ -115,14 +116,12 @@ def test_creates_tag_with_minor_bump_when_feature_merge_against_prior_semver_tag
 
     result: typing.Final = use_case(output=output)
 
-    assert result.status == "created"
+    assert isinstance(result, Created)
     assert result.tag == _EXPECTED_NEW_TAG
-    assert result.bump == "minor"
-    assert result.strategy == _BRANCH_PREFIX_STRATEGY
+    assert result.bump is Bump.MINOR
     assert result.commit == _LATEST_SHA
-    assert result.reason is None
     assert provider.create_tag_calls == [(_EXPECTED_NEW_TAG, _LATEST_SHA)]
-    assert output.emitted_results == [result]
+    assert output.emitted == [(result, _BRANCH_PREFIX_STRATEGY)]
 
 
 def test_skips_with_already_tagged_when_latest_commit_sha_matches_a_tag() -> None:
@@ -132,9 +131,9 @@ def test_skips_with_already_tagged_when_latest_commit_sha_matches_a_tag() -> Non
 
     result: typing.Final = use_case(output=output)
 
-    assert result.status == "already_tagged"
+    assert isinstance(result, AlreadyTagged)
     assert result.tag == _LATEST_TAG_NAME
-    assert result.bump == "none"
+    assert result.commit == _LATEST_SHA
     assert provider.create_tag_calls == []
 
 
@@ -146,10 +145,9 @@ def test_skips_with_no_merge_commit_under_branch_prefix_when_bump_is_none() -> N
 
     result: typing.Final = use_case(output=output)
 
+    assert isinstance(result, NoBump)
     assert result.status == "no_merge_commit"
-    assert result.bump == "none"
-    assert result.tag is None
-    assert result.reason is not None
+    assert result.reason
     assert provider.create_tag_calls == []
 
 
@@ -162,8 +160,9 @@ def test_skips_with_no_conforming_commit_under_conventional_commits_when_bump_is
 
     result: typing.Final = use_case(output=output)
 
+    assert isinstance(result, NoBump)
     assert result.status == "no_conforming_commit"
-    assert result.strategy == _CONVENTIONAL_STRATEGY
+    assert output.emitted == [(result, _CONVENTIONAL_STRATEGY)]
 
 
 def test_skips_with_no_tags_when_no_semver_conforming_tags_exist() -> None:
@@ -171,9 +170,8 @@ def test_skips_with_no_tags_when_no_semver_conforming_tags_exist() -> None:
 
     result: typing.Final = use_case(output=output)
 
-    assert result.status == "no_tags"
-    assert result.tag is None
-    assert result.bump == "none"
+    assert isinstance(result, NoTags)
+    assert result.commit == _LATEST_SHA
     assert provider.create_tag_calls == []
 
 
@@ -187,7 +185,7 @@ def test_skips_with_no_tags_when_only_non_semver_tags_exist() -> None:
 
     result: typing.Final = use_case(output=output)
 
-    assert result.status == "no_tags"
+    assert isinstance(result, NoTags)
 
 
 def test_picks_highest_semver_tag_not_first_in_list_when_computing_bump() -> None:
@@ -202,6 +200,7 @@ def test_picks_highest_semver_tag_not_first_in_list_when_computing_bump() -> Non
 
     result: typing.Final = use_case(output=output)
 
+    assert isinstance(result, Created)
     assert result.tag == "2.0.1"
     assert provider.create_tag_calls == [("2.0.1", _LATEST_SHA)]
 
@@ -217,8 +216,9 @@ def test_picks_highest_semver_tag_not_first_in_list_when_computing_bump() -> Non
 def test_bump_arithmetic_dispatches_to_semver_bump_kind(bump: Bump, expected_tag: str) -> None:
     use_case, _provider, output = _make_use_case(bump=bump)
     result: typing.Final = use_case(output=output)
+    assert isinstance(result, Created)
     assert result.tag == expected_tag
-    assert result.bump == bump.value
+    assert result.bump is bump
 
 
 def test_progress_messages_fire_before_each_phase() -> None:
@@ -235,14 +235,12 @@ def test_dry_run_skips_create_tag_and_emits_dry_run_status() -> None:
 
     result: typing.Final = use_case(output=output, dry_run=True)
 
-    assert result.status == "dry_run"
+    assert isinstance(result, DryRun)
     assert result.tag == _EXPECTED_NEW_TAG
-    assert result.bump == "minor"
-    assert result.strategy == _BRANCH_PREFIX_STRATEGY
+    assert result.bump is Bump.MINOR
     assert result.commit == _LATEST_SHA
-    assert result.reason is None
     assert provider.create_tag_calls == []
-    assert output.emitted_results == [result]
+    assert output.emitted == [(result, _BRANCH_PREFIX_STRATEGY)]
 
 
 def test_dry_run_does_not_emit_creating_tag_progress() -> None:
@@ -260,7 +258,7 @@ def test_dry_run_does_not_affect_already_tagged_path() -> None:
 
     result: typing.Final = use_case(output=output, dry_run=True)
 
-    assert result.status == "already_tagged"
+    assert isinstance(result, AlreadyTagged)
     assert provider.create_tag_calls == []
 
 
@@ -269,7 +267,7 @@ def test_dry_run_does_not_affect_no_tags_path() -> None:
 
     result: typing.Final = use_case(output=output, dry_run=True)
 
-    assert result.status == "no_tags"
+    assert isinstance(result, NoTags)
     assert provider.create_tag_calls == []
 
 
@@ -281,6 +279,7 @@ def test_dry_run_does_not_affect_strategy_no_bump_path() -> None:
 
     result: typing.Final = use_case(output=output, dry_run=True)
 
+    assert isinstance(result, NoBump)
     assert result.status == "no_merge_commit"
     assert provider.create_tag_calls == []
 
@@ -290,5 +289,5 @@ def test_dry_run_false_default_creates_tag() -> None:
 
     result: typing.Final = use_case(output=output)
 
-    assert result.status == "created"
+    assert isinstance(result, Created)
     assert provider.create_tag_calls == [(_EXPECTED_NEW_TAG, _LATEST_SHA)]

@@ -4,22 +4,17 @@ import typing
 import pytest
 import rich.console
 
+from semvertag._outcome import AlreadyTagged, Created, DryRun, NoBump, NoTags, Outcome
 from semvertag._output import JsonOutput, RichOutput, build_json_output, build_rich_output
-from semvertag._types import RunResult
+from semvertag._types import Bump
 
 
 _GITLAB_TOKEN: typing.Final = "glpat-AbCdEf1234567890ABCD"
 _REDACTED: typing.Final = "***"
+_STRATEGY: typing.Final = "branch-prefix"
 _PROGRESS_MESSAGE: typing.Final = "Detected strategy: branch-prefix"
 _ERROR_MESSAGE: typing.Final = "ConfigError: bad config"
-_EXAMPLE_RESULT: typing.Final = RunResult(
-    strategy="branch-prefix",
-    bump="minor",
-    status="created",
-    tag="1.2.0",
-    commit="a2b4d12abc1234567890",
-    reason=None,
-)
+_EXAMPLE_OUTCOME: typing.Final = Created(tag="1.2.0", bump=Bump.MINOR, commit="a2b4d12abc1234567890")
 
 
 def _make_pair(*, quiet: bool = False) -> tuple[RichOutput, io.StringIO, io.StringIO]:
@@ -47,7 +42,7 @@ def test_progress_is_no_op_when_quiet() -> None:
 
 def test_emit_renders_result_to_stdout() -> None:
     output, stdout_buf, stderr_buf = _make_pair()
-    output.emit(_EXAMPLE_RESULT)
+    output.emit(_EXAMPLE_OUTCOME, strategy=_STRATEGY)
     stdout_text: typing.Final = stdout_buf.getvalue()
     assert "1.2.0" in stdout_text
     assert "a2b4d12" in stdout_text
@@ -56,7 +51,7 @@ def test_emit_renders_result_to_stdout() -> None:
 
 def test_emit_renders_when_quiet() -> None:
     output, stdout_buf, _stderr = _make_pair(quiet=True)
-    output.emit(_EXAMPLE_RESULT)
+    output.emit(_EXAMPLE_OUTCOME, strategy=_STRATEGY)
     assert "1.2.0" in stdout_buf.getvalue()
 
 
@@ -97,28 +92,29 @@ def test_matrix_keeps_stderr_for_errors(quiet: bool) -> None:
 
 
 @pytest.mark.parametrize(
-    "status",
-    ["no_merge_commit", "no_conforming_commit", "already_tagged", "no_tags"],
+    ("outcome", "expected"),
+    [
+        (NoTags(commit="abc1234def"), "no prior semver-conforming tag"),
+        (AlreadyTagged(tag="1.2.0", commit="abc1234def"), "already tagged 1.2.0"),
+        (
+            NoBump(status="no_merge_commit", reason="Latest commit is not a merge commit.", commit="abc1234def"),
+            "Latest commit is not a merge commit.",
+        ),
+    ],
 )
-def test_emit_renders_non_created_status_to_stdout(status: str) -> None:
+def test_emit_renders_no_bump_outcomes_as_human_sentences(outcome: Outcome, expected: str) -> None:
     output, stdout_buf, _stderr = _make_pair()
-    no_tag_result: typing.Final = RunResult(
-        strategy="branch-prefix",
-        bump="none",
-        status=status,
-        tag=None,
-        commit=None,
-        reason=status,
-    )
-    output.emit(no_tag_result)
-    assert status in stdout_buf.getvalue()
+    output.emit(outcome, strategy=_STRATEGY)
+    stdout_text: typing.Final = stdout_buf.getvalue()
+    assert "No tag created" in stdout_text
+    assert expected in stdout_text
 
 
 @pytest.mark.parametrize("quiet", [False, True])
 def test_rich_matrix_no_interleaving_in_full_sequence(quiet: bool) -> None:
     output, stdout_buf, stderr_buf = _make_pair(quiet=quiet)
     output.progress(_PROGRESS_MESSAGE)
-    output.emit(_EXAMPLE_RESULT)
+    output.emit(_EXAMPLE_OUTCOME, strategy=_STRATEGY)
     output.error(_ERROR_MESSAGE)
     stdout_text: typing.Final = stdout_buf.getvalue()
     stderr_text: typing.Final = stderr_buf.getvalue()
@@ -147,15 +143,7 @@ def test_build_json_output_returns_json_output_with_quiet_passthrough() -> None:
 
 def test_emit_renders_dry_run_with_would_create_phrasing() -> None:
     output, stdout_buf, _stderr = _make_pair()
-    dry_run_result: typing.Final = RunResult(
-        strategy="branch-prefix",
-        bump="minor",
-        status="dry_run",
-        tag="1.2.0",
-        commit="a2b4d12abc1234567890",
-        reason=None,
-    )
-    output.emit(dry_run_result)
+    output.emit(DryRun(tag="1.2.0", bump=Bump.MINOR, commit="a2b4d12abc1234567890"), strategy=_STRATEGY)
     stdout_text: typing.Final = stdout_buf.getvalue()
     assert "Dry run" in stdout_text
     assert "would create tag 1.2.0" in stdout_text

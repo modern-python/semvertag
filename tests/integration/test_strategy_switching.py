@@ -67,7 +67,7 @@ def test_skips_with_no_conforming_commit_when_strategy_is_cc_and_message_has_no_
     result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
 
     assert result.exit_code == 0
-    assert "no_conforming_commit" in result.stdout
+    assert "No tag created" in result.stdout
     assert "No conforming Conventional Commits type" in result.stdout
 
 
@@ -82,7 +82,7 @@ def test_marina_journey_same_fixture_different_strategies_produces_different_bum
     monkeypatch.setenv("SEMVERTAG_STRATEGY", "branch-prefix")
     bp_result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
     assert bp_result.exit_code == 0
-    assert "no_merge_commit" in bp_result.stdout
+    assert "not a merge commit" in bp_result.stdout
 
     monkeypatch.setenv("SEMVERTAG_STRATEGY", "conventional-commits")
     cc_result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])

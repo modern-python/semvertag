@@ -65,7 +65,7 @@ def test_skips_with_already_tagged_when_latest_commit_sha_matches_latest_tag(
     result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
 
     assert result.exit_code == 0, result.output + result.stderr
-    assert "already_tagged" in result.stdout
+    assert "already tagged" in result.stdout
 
 
 def test_skips_with_no_merge_commit_when_latest_commit_is_not_a_merge(
@@ -78,7 +78,7 @@ def test_skips_with_no_merge_commit_when_latest_commit_is_not_a_merge(
     result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
 
     assert result.exit_code == 0, result.output + result.stderr
-    assert "no_merge_commit" in result.stdout
+    assert "not a merge commit" in result.stdout
 
 
 def test_skips_with_no_tags_when_repo_has_zero_semver_conforming_tags(
@@ -91,7 +91,7 @@ def test_skips_with_no_tags_when_repo_has_zero_semver_conforming_tags(
     result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
 
     assert result.exit_code == 0, result.output + result.stderr
-    assert "no_tags" in result.stdout
+    assert "no prior semver-conforming tag" in result.stdout
 
 
 def test_emits_json_envelope_with_schema_version_first_when_json_flag_set(

@@ -3,14 +3,11 @@ import typing
 
 import semver
 
+from semvertag._outcome import AlreadyTagged, Created, DryRun, NoBump, NoTags, Outcome
 from semvertag._output import Output
-from semvertag._types import Bump, RunResult, Tag
+from semvertag._types import Bump, Tag
 from semvertag.providers._base import Provider
 from semvertag.strategies._base import BumpStrategy
-
-
-_NO_TAGS_REASON: typing.Final = "No prior semver-conforming tags found; not seeding an initial tag in v1.0."
-_ALREADY_TAGGED_REASON: typing.Final = "Latest commit already tagged."
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
@@ -18,7 +15,7 @@ class SemvertagUseCase:
     provider: Provider
     strategy: BumpStrategy
 
-    def __call__(self, *, output: Output, dry_run: bool = False) -> RunResult:
+    def __call__(self, *, output: Output, dry_run: bool = False) -> Outcome:
         output.progress(f"Detected strategy: {self.strategy.name}")
         output.progress("Fetching latest commit on default branch...")
         commit: typing.Final = self.provider.get_latest_commit_on_default_branch()
@@ -28,79 +25,30 @@ class SemvertagUseCase:
         latest_semver_tag: typing.Final = _pick_latest_semver_tag(tags)
 
         if latest_semver_tag is None:
-            return self._emit(
-                output=output,
-                bump=Bump.NONE,
-                status="no_tags",
-                tag=None,
-                commit=commit.sha,
-                reason=_NO_TAGS_REASON,
-            )
+            return self._emit(output, NoTags(commit=commit.sha))
 
         if latest_semver_tag.commit_sha == commit.sha:
-            return self._emit(
-                output=output,
-                bump=Bump.NONE,
-                status="already_tagged",
-                tag=latest_semver_tag.name,
-                commit=commit.sha,
-                reason=_ALREADY_TAGGED_REASON,
-            )
+            return self._emit(output, AlreadyTagged(tag=latest_semver_tag.name, commit=commit.sha))
 
         output.progress("Computing bump...")
         bump: typing.Final = self.strategy.decide(commit)
         if bump is Bump.NONE:
             return self._emit(
-                output=output,
-                bump=Bump.NONE,
-                status=self.strategy.no_bump_status,
-                tag=None,
-                commit=commit.sha,
-                reason=self.strategy.no_bump_reason,
+                output,
+                NoBump(status=self.strategy.no_bump_status, reason=self.strategy.no_bump_reason, commit=commit.sha),
             )
 
         new_version: typing.Final = _compute_new_version(latest_semver_tag, bump)
         if dry_run:
-            return self._emit(
-                output=output,
-                bump=bump,
-                status="dry_run",
-                tag=new_version,
-                commit=commit.sha,
-                reason=None,
-            )
+            return self._emit(output, DryRun(tag=new_version, bump=bump, commit=commit.sha))
 
         output.progress(f"Creating tag {new_version}...")
         self.provider.create_tag(name=new_version, commit_sha=commit.sha)
-        return self._emit(
-            output=output,
-            bump=bump,
-            status="created",
-            tag=new_version,
-            commit=commit.sha,
-            reason=None,
-        )
+        return self._emit(output, Created(tag=new_version, bump=bump, commit=commit.sha))
 
-    def _emit(  # noqa: PLR0913
-        self,
-        *,
-        output: Output,
-        bump: Bump,
-        status: str,
-        tag: str | None,
-        commit: str | None,
-        reason: str | None,
-    ) -> RunResult:
-        result: typing.Final = RunResult(
-            strategy=self.strategy.name,
-            bump=bump.value,
-            status=status,
-            tag=tag,
-            commit=commit,
-            reason=reason,
-        )
-        output.emit(result)
-        return result
+    def _emit(self, output: Output, outcome: Outcome) -> Outcome:
+        output.emit(outcome, strategy=self.strategy.name)
+        return outcome
 
 
 def _pick_latest_semver_tag(tags: list[Tag]) -> Tag | None:
