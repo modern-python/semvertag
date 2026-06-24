@@ -4,6 +4,9 @@ import typing
 from semvertag._types import Bump, RunResult
 
 
+# These are the JSON wire reasons. The human terminal path (_output._format_outcome)
+# words NoTags/AlreadyTagged differently on purpose — edit both if you change the
+# message for one audience.
 _NO_TAGS_REASON: typing.Final = "No prior semver-conforming tags found; not seeding an initial tag in v1.0."
 _ALREADY_TAGGED_REASON: typing.Final = "Latest commit already tagged."
 
