@@ -73,34 +73,51 @@ provider (`{provider}.token`), so one flag lands on whichever forge is active.
 
 `semvertag/_use_case.py` defines `SemvertagUseCase`, a frozen dataclass holding
 a `provider` and a `strategy`; calling it (`__call__(*, output, dry_run=False)
--> RunResult`) is the whole orchestration:
+-> Outcome`) is the whole orchestration:
 
 1. fetch the latest commit on the default branch;
 2. list tags and pick the highest semver-parseable one (`_pick_latest_semver_tag`
    sorts by `semver.Version`; unparseable names are skipped);
-3. early no-bump exits — `no_tags` when there is no prior semver tag (it does
-   **not** seed an initial tag in v1.0), `already_tagged` when the head commit
+3. early no-bump exits — `NoTags` when there is no prior semver tag (it does
+   **not** seed an initial tag in v1.0), `AlreadyTagged` when the head commit
    already carries the latest tag;
-4. ask the strategy for a `Bump`; `Bump.NONE` exits with the strategy's own
-   status/reason;
+4. ask the strategy for a `Bump`; `Bump.NONE` exits with `NoBump`, carrying the
+   strategy's own status/reason;
 5. compute the new version (`_compute_new_version` via `semver`'s
    `bump_major/minor/patch`);
-6. if `dry_run`, return `dry_run`; else `provider.create_tag` and return
-   `created`.
+6. if `dry_run`, return `DryRun`; else `provider.create_tag` and return
+   `Created`.
 
-Every exit funnels through `_emit`, which builds a frozen `RunResult`
-(`schema_version`, `strategy`, `bump`, `status`, `tag`, `commit`, `reason`),
-hands it to the output, and returns it.
+Every exit returns one of the closed `Outcome` variants and funnels through
+`_emit`, which hands it to `output.emit(outcome, strategy=self.strategy.name)`
+and returns it.
+
+## Outcome
+
+`semvertag/_outcome.py` defines the closed sum `Outcome = Created | DryRun |
+NoTags | AlreadyTagged | NoBump` — five frozen/slotted/kw-only variants, each
+carrying only its meaningful fields. `NoBump` holds the strategy-supplied
+`status` + `reason` as data, so the sum stays closed and decoupled from the open
+set of strategies. The free function `to_run_result(outcome, *, strategy) ->
+RunResult` projects a variant onto the JSON wire DTO via one exhaustive `match`
+(final `case _: assert_never`) — the single place the four fixed wire status
+tokens and reasons live. The dependency points one way: `_outcome → _types`.
+Renderers `match` over `Outcome`, not over a status string; adding a sixth
+variant is a `ty` error in every match until handled.
 
 ## Output
 
-`semvertag/_output.py` defines an `Output` protocol (`progress` / `emit` /
-`error`) with two implementations. `RichOutput` is the human path: progress
-lines and a one-sentence result to stdout via `rich`, errors to stderr.
-`JsonOutput` is the machine path: `progress` is a no-op and `emit` writes a
-single compact JSON envelope (`dataclasses.asdict(result)`) to stdout. `--quiet`
-suppresses progress narrative on both while still emitting the final result.
-`RichOutput` redacts all output paths; `JsonOutput` redacts only its `error` path — `emit` writes the result envelope as unredacted JSON (see providers.md).
+`semvertag/_output.py` defines an `Output` protocol (`progress` /
+`emit(outcome, *, strategy)` / `error`) with two implementations. `RichOutput`
+is the human path: progress lines and a one-sentence result to stdout via
+`rich` (a `match` over `Outcome` — the no-bump cases read as a reason sentence,
+not a raw status token), errors to stderr. `JsonOutput` is the machine path:
+`progress` is a no-op and `emit` runs `to_run_result` then writes a single
+compact JSON envelope (`dataclasses.asdict(result)`, `schema_version` `"1.0"`)
+to stdout. `--quiet` suppresses progress narrative on both while still emitting
+the final result. `RichOutput` redacts all output paths; `JsonOutput` redacts
+only its `error` path — `emit` writes the result envelope as unredacted JSON
+(see providers.md).
 
 ## Distribution wrappers
 
