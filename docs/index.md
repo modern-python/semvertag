@@ -51,4 +51,3 @@ semvertag ships with two bump-decision strategies:
 
 Both strategies are configurable via environment variables — see the
 strategy pages for the full configuration surface.
-
