@@ -50,8 +50,7 @@ _HOST_CI_ENV_VARS: typing.Final = (
 
 @pytest.fixture(autouse=True)
 def _isolate_ci_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """
-    Strip every env var that Settings reads, so tests aren't accidentally driven by the host runner.
+    """Strip every env var that Settings reads, so tests aren't accidentally driven by the host runner.
 
     Without this, GitHub Actions runners (which auto-export GITHUB_ACTIONS=true,
     GITHUB_REPOSITORY, GITHUB_TOKEN) and GitLab CI runners (GITLAB_CI=true,

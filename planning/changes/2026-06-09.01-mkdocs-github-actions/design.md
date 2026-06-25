@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-09
-slug: mkdocs-github-actions
 summary: "Docs hosting via MkDocs + GitHub Actions + Pages."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped (#14)
 ---
 
 # mkdocs deploy via GitHub Actions — design

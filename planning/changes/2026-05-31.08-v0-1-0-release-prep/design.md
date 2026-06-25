@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: v0-1-0-release-prep
 summary: "Pre-1.0 release preparation."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (0.1.0 release prep)
 ---
 
 # v0.1.0 release prep

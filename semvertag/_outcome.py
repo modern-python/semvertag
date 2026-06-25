@@ -57,8 +57,7 @@ Outcome: typing.TypeAlias = Created | DryRun | NoTags | AlreadyTagged | NoBump
 
 
 def to_run_result(outcome: Outcome, *, strategy: str) -> RunResult:
-    """
-    Project a closed Outcome onto the JSON wire DTO.
+    """Project a closed Outcome onto the JSON wire DTO.
 
     The single place the four fixed wire status tokens and the fixed reasons
     live; NoBump passes the strategy's own status/reason through. The

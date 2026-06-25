@@ -1,47 +1,47 @@
 # semvertag — Claude project guide
 
+## Architecture
+
+> Quick orientation. The authoritative, code-current account of each capability
+> lives in [`architecture/`](architecture/). **When a change alters a
+> capability's behavior, update the matching `architecture/<capability>.md` in
+> the same PR** — that promotion is what keeps `architecture/` true.
+
+`semvertag` funnels everything through one process: a human at a shell, the
+GitHub Action, and the GitLab CI component all invoke `semvertag tag`, which
+parses flags + environment into validated `Settings`, wires a **provider** and a
+**strategy** through a modern-di container, and runs the use-case. Invariants
+that must not break: the CLI is the single entry point all wrappers share;
+providers expose a forge-neutral contract (read commits/tags, create a tag)
+independent of GitLab-vs-GitHub REST differences; strategies answer only "given
+this repo signal, what bump level" with no network and no tag-history reads.
+
+| Capability | File |
+|---|---|
+| CLI entry point, `Settings`, DI wiring, Action / CI wrappers | [`architecture/cli.md`](architecture/cli.md) |
+| Forge adapters (GitLab, GitHub) and their neutral contract | [`architecture/providers.md`](architecture/providers.md) |
+| Bump-level strategies (`branch-prefix`, `conventional-commits`) | [`architecture/strategies.md`](architecture/strategies.md) |
+
 ## Workflow
 
 This project uses **Superpowers** (brainstorm → plan → TDD → review) with the
-portable two-axis planning convention. The living truth about *what the system
-does now* lives in [`architecture/`](architecture/) at the repo root (one file
-per capability: `strategies.md`, `providers.md`, `cli.md`); `planning/` records
-*how it got there*. See [`planning/README.md`](planning/README.md) for the full
-conventions and the change Index, and [`planning/_templates/`](planning/_templates/)
-for copy-and-fill starters.
+portable two-axis planning convention. `architecture/` (repo root) is the living
+truth home; `planning/` records *how it got there*. **Start at the
+[Quick path](planning/README.md#quick-path-start-here)** in
+[`planning/README.md`](planning/README.md) to choose a lane (Full / Lightweight /
+Tiny), create a bundle, and ship — that file is the authoritative spec. Run
+`just check-planning` to validate bundles and `just index` to print the change
+listing.
 
-Per feature: brainstorming → spec in
-`planning/changes/YYYY-MM-DD.NN-<slug>/design.md` → writing-plans → plan
-in the same bundle's `plan.md` → executing-plans / subagent-driven-development →
-requesting-code-review → finishing-a-development-branch. `<slug>` is a
-kebab-case description, not a story ID; `.NN` is a zero-padded intra-day counter
-that breaks same-date ties. The implementing PR sets `status: shipped` and fills
-`pr` / `outcome` in the branch, alongside the code and the
-`architecture/<capability>.md` promotion — that hand-edit is the only ship-time
-step; there is no folder move. The change listing is generated — run `just index`
-(no committed Index). A design decision taken **without** a code change —
-especially a candidate **rejected** with a load-bearing reason — is recorded as
-`planning/decisions/YYYY-MM-DD-<slug>.md` (the `decision.md` template, frontmatter
-`status: accepted|superseded`), each with a **Revisit trigger** so future reviews
-don't re-litigate it; listed by `just index`.
+Per feature: brainstorming → `design.md` → writing-plans → `plan.md` →
+executing-plans / subagent-driven-development → requesting-code-review →
+finishing-a-development-branch. Use TDD by default (red, green, refactor), git
+worktrees for isolation (`superpowers:using-git-worktrees`), the verification
+gate before claiming completion (`superpowers:verification-before-completion`),
+and a subagent code review before landing (`superpowers:requesting-code-review`).
 
-**Three lanes.** Scale the artifact to the change. **Full** — a `design.md` +
-`plan.md` bundle — for real design judgment, a new file/module, a public-API
-change, cross-cutting/multi-file work, or non-trivial test design.
-**Lightweight** — a single `change.md` — for small-but-real changes (≲30 LOC
-net, ≤2 files, no new file, no public-API change, a single straightforward
-test). **Tiny** — no bundle, just a conventional commit — for a typo, dep bump,
-linter/formatter/CI tweak, a mechanical rename, or a single-line config change.
-Heavier lane wins on ambiguity.
-
-Use TDD by default: red, green, refactor. Tests before implementation. Use git
-worktrees for feature isolation (`superpowers:using-git-worktrees`). Use the
-verification gate before claiming work complete
-(`superpowers:verification-before-completion`). Request code review via a
-subagent before landing (`superpowers:requesting-code-review`).
-
-Planning artifacts live under `planning/` (not under `docs/`, so they're
-excluded from the mkdocs site automatically). When superpowers skills default to
+Planning artifacts live under `planning/` (not `docs/`, so they're excluded from
+the mkdocs site automatically). When superpowers skills default to
 `docs/superpowers/specs/` or `docs/superpowers/plans/`, use the change bundle
 under `planning/changes/` here instead.
 
@@ -80,15 +80,15 @@ belong to the retired BMad workflow.
   package. Behavioral reference only — port logic and test shapes from it
   but never `git mv` files in or take it as a starter.
 
-## Test stack and lint
+## Commands
 
-See `Justfile` for the canonical commands. Quick reference:
+`just --list` is the source of truth. Non-obvious "which to use when":
 
-- `just lint-ci` — eof-fixer, ruff format check, ruff check, ty check
-  (check-only; `just lint` is the autofixing variant)
-- `just test` — pytest. The `addopts` in `pyproject.toml` add `--cov-branch`
-  with a project-wide `fail_under = 100` gate, so every branch (strategy
-  modules included) must be covered. Pass args through, e.g.
+- `just lint` autofixes; `just lint-ci` is check-only and also runs the
+  planning validator (`planning/index.py --check`, also `just check-planning`).
+- `just test` runs pytest with `--cov-branch` and a project-wide
+  `fail_under = 100` gate (set in `pyproject.toml` addopts), so every branch
+  must be covered. Pass args through:
   `just test tests/unit/test_branch_prefix_strategy.py -q`.
 - `just docs-build` — strict mkdocs build (`mkdocs build --strict`), the docs
   gate.

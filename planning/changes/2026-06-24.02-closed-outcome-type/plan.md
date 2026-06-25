@@ -1,11 +1,3 @@
----
-status: shipped
-date: 2026-06-24
-slug: closed-outcome-type
-spec: closed-outcome-type
-pr: 34
----
-
 # closed-outcome-type — implementation plan
 
 **Goal:** Replace the free-form run-status strings with a closed `Outcome` sum

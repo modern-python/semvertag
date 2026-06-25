@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-09
-slug: action-yml-dry-run
 summary: "Composite action `dry-run` input wired to the CLI flag."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped (#16)
 ---
 
 # action.yml `dry-run` input + side-effect-free action-smoke — design

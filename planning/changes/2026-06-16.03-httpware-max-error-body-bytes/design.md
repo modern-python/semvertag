@@ -1,14 +1,5 @@
 ---
-status: shipped
-date: 2026-06-16
-slug: httpware-max-error-body-bytes
 summary: "Cap provider error-body reads at 1 MiB; translate `ResponseTooLargeError` to `ProviderAPIError`."
-supersedes: null
-superseded_by: null
-pr: 26
-outcome: Shipped. Both provider clients built with a 1 MiB max_error_body_bytes
-  cap; ResponseTooLargeError translates to ProviderAPIError (None-length
-  guarded). Conclusions promoted into architecture/providers.md.
 ---
 
 # Design: Bound provider error-body reads (httpware max_error_body_bytes)

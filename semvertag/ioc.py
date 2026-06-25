@@ -50,8 +50,7 @@ def _build_current_provider(
     gitlab_client: httpware.Client,
     github_client: httpware.Client,
 ) -> Provider:
-    """
-    Construct the active provider.
+    """Construct the active provider.
 
     Both clients are eagerly resolved (modern-di Factory eagerly resolves all
     provider_kwargs in resolve()). That's acceptable — httpx2 connection pools

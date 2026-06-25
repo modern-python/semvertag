@@ -55,8 +55,7 @@ def _translate_transport(exc: httpware.ClientError, *, provider_label: str) -> E
 
 
 def translate_gitlab(exc: httpware.ClientError, *, project_id: int) -> Exception:
-    """
-    Translate an httpware ClientError into the semvertag domain error for GitLab.
+    """Translate an httpware ClientError into the semvertag domain error for GitLab.
 
     Handles both status errors (4xx/5xx) and transport-layer failures
     (network, timeout, retry budget exhaustion).
@@ -107,8 +106,7 @@ def _translate_github_status(exc: httpware.StatusError, *, repo: str) -> Excepti
 
 
 def translate_github(exc: httpware.ClientError, *, repo: str) -> Exception:
-    """
-    Translate an httpware ClientError into the semvertag domain error for GitHub.
+    """Translate an httpware ClientError into the semvertag domain error for GitHub.
 
     Mirrors translate_gitlab's dispatch order; status branches carry GitHub-specific
     actionable hints. Transport branches (DecodeError, TimeoutError, RetryBudget,

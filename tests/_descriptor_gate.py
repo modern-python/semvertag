@@ -1,5 +1,4 @@
-"""
-Structural validator for templates/semvertag.yml.
+"""Structural validator for templates/semvertag.yml.
 
 Shared between the `.github/workflows/ci.yml` lint step and the
 regression test fixtures in test_ci_descriptor_gate.py so the gate

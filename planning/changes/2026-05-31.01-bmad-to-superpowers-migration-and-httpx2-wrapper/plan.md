@@ -1,11 +1,3 @@
----
-status: shipped
-date: 2026-05-31
-slug: bmad-to-superpowers-migration-and-httpx2-wrapper
-spec: bmad-to-superpowers-migration-and-httpx2-wrapper
-pr: null
----
-
 # BMad → Superpowers Migration + httpx2 Wrapper Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

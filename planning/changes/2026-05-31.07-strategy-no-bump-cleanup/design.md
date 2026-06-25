@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: strategy-no-bump-cleanup
 summary: "Clean up the strategies' no-bump return path."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (no-bump return path)
 ---
 
 # Move strategy-specific no-bump explanation onto the strategy classes

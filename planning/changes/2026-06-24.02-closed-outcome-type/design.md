@@ -1,18 +1,5 @@
 ---
-status: shipped
-date: 2026-06-24
-slug: closed-outcome-type
 summary: Replace the free-form run-status strings with a closed Outcome sum type the renderers dispatch over exhaustively.
-supersedes: null
-superseded_by: null
-pr: 34
-outcome: >
-  Shipped in #34. Closed Outcome sum (semvertag/_outcome.py) + to_run_result wire
-  mapping; Output.emit(outcome, *, strategy); use-case returns Outcome.
-  Exhaustiveness proven — a 6th variant makes ty fail at both assert_never sites.
-  JSON envelope byte-identical (schema_version 1.0); human no-bump output reworded
-  to a reason sentence. Review came back clean; added a comment marking the
-  intentional human/wire reason wording split for NoTags/AlreadyTagged.
 ---
 
 # Design: Closed Outcome type

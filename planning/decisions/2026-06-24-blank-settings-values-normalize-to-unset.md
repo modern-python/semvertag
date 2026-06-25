@@ -1,11 +1,8 @@
 ---
-status: accepted        # accepted | superseded
-date: 2026-06-24
-slug: blank-settings-values-normalize-to-unset
+status: accepted
 summary: A blank (empty/whitespace) optional settings value normalizes to None (unset), it is not rejected.
 supersedes: null
 superseded_by: null
-pr: 33
 ---
 
 # Blank optional settings values normalize to unset, not reject

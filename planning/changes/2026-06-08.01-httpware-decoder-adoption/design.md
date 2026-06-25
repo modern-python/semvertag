@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-08
-slug: httpware-decoder-adoption
 summary: "Adopt the httpware response decoder in the providers."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped (#3)
 ---
 
 # httpware decoder adoption — design spec

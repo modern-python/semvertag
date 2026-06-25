@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-08
-slug: action-yml-composite-wrapper
 summary: "`action.yml` composite GitHub Action wrapping the CLI."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped (#10)
 ---
 
 # action.yml composite wrapper — design spec

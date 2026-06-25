@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: bmad-to-superpowers-migration-and-httpx2-wrapper
 summary: "Retire BMad for Superpowers; add the HTTP-client wrapper."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (retired BMad; added the httpx HTTP-client wrapper)
 ---
 
 # BMad → Superpowers migration + httpx2 wrapper pilot

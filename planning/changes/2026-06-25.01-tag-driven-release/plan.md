@@ -1,11 +1,3 @@
----
-status: shipped
-date: 2026-06-25
-slug: tag-driven-release
-spec: tag-driven-release
-pr: 35
----
-
 # tag-driven-release — implementation plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use

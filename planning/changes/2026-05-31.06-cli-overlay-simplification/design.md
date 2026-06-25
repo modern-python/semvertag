@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: cli-overlay-simplification
 summary: "Replace the CLI-overlay machinery with `model_copy`."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (model_copy CLI overlay)
 ---
 
 # Simplify `apply_cli_overlay` in `_settings.py`

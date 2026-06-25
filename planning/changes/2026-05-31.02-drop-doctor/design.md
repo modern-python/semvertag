@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: drop-doctor
 summary: "Remove the `doctor` command."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (removed the doctor command)
 ---
 
 # Drop `semvertag doctor` subcommand

@@ -1,5 +1,4 @@
-"""
-Regression tests for the shared descriptor-shape gate in tests/_descriptor_gate.py.
+"""Regression tests for the shared descriptor-shape gate in tests/_descriptor_gate.py.
 
 Authored as part of Story 4.3b code review (Constraint 7 exception
 granted at code-review time on 2026-05-30) so the CI gate gains a

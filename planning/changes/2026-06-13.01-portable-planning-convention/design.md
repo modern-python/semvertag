@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-13
-slug: portable-planning-convention
 summary: "Adopt the portable two-axis convention: `architecture/` truth home + `changes/` bundles, migrate the 15 spec/plan pairs, fresh Index."
-supersedes: null
-superseded_by: null
-pr: 21
-outcome: shipped (#21) — architecture/ truth home + changes/ bundles; 15 spec/plan pairs migrated; fresh Index
 ---
 
 # Design: Adopt the portable two-axis planning convention

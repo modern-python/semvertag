@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: ioc-idiomatic-modern-di-typer
 summary: "Idiomatic modern-di + Typer IoC wiring."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (modern-di + Typer IoC)
 ---
 
 # Idiomatic `modern-di-typer` wiring in `ioc.py` + `__main__.py`

@@ -1,14 +1,5 @@
 ---
-status: shipped
-date: 2026-06-16
-slug: httpware-0.12-get-with-response
 summary: "Bump httpware to 0.12.0; adopt `get_with_response` at the pagination call sites."
-supersedes: null
-superseded_by: null
-pr: 24
-outcome: Shipped. httpware floor raised to >=0.12.0; both Link-header pagination
-  call sites now use get_with_response. No behavior change; no architecture
-  contract moved.
 ---
 
 # Change: Bump httpware to 0.12.0 and adopt get_with_response in pagination

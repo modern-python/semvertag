@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: settings-aliaschoices
 summary: "pydantic-settings `AliasChoices` for env/CLI names."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (pydantic-settings AliasChoices)
 ---
 
 # Adopt Pydantic `AliasChoices` in `_settings.py`

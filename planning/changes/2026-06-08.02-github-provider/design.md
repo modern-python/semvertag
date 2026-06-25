@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-08
-slug: github-provider
 summary: "GitHub provider alongside GitLab."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped (#4)
 ---
 
 # GitHub provider — design spec

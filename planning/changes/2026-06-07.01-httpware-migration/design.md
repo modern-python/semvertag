@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-07
-slug: httpware-migration
 summary: "Migrate the HTTP client onto httpware."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped (#2)
 ---
 
 # httpware migration — design spec

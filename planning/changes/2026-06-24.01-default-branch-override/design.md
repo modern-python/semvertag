@@ -1,18 +1,5 @@
 ---
-status: shipped
-date: 2026-06-24
-slug: default-branch-override
 summary: Make the advertised --default-branch / SEMVERTAG_DEFAULT_BRANCH override actually take effect.
-supersedes: null
-superseded_by: null
-pr: 33
-outcome: >
-  Shipped in #33. Override honored via an optional `default_branch` field on each
-  provider plus a `get_default_branch()` short-circuit; wired from settings in
-  ioc. Review caught a regression in the first cut (`min_length=1` turned a
-  declared-but-empty `SEMVERTAG_DEFAULT_BRANCH=` into a hard ValidationError);
-  fixed by normalizing blank to unset (see decision
-  2026-06-24-blank-settings-values-normalize-to-unset).
 ---
 
 # Design: Honor the default-branch override

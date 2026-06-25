@@ -1,16 +1,5 @@
 ---
-status: shipped
-date: 2026-06-25
-slug: tag-driven-release
 summary: Tag-driven release.yml (PyPI + Release + v0); dogfood goes dry-run; publish.yml/tag-major.yml deleted.
-supersedes: null
-superseded_by: null
-pr: 35
-outcome: |
-  Shipped a tag-driven release.yml (PyPI -> GitHub Release -> v0 float) replacing
-  publish.yml + tag-major.yml; semvertag.yml dogfood runs dry-run so a hand-pushed
-  bare semver tag is the sole release entry point. Maintainer runbook moved to
-  CLAUDE.md; stale docs/contributing/release.md removed.
 ---
 
 # Design: Tag-driven release for semvertag

@@ -1,11 +1,8 @@
 ---
-status: accepted        # accepted | superseded
-date: 2026-06-24
-slug: error-translators-not-tabled
+status: accepted
 summary: Keep the two per-forge HTTP status→error ladders as explicit copies; do not table-drive them.
 supersedes: null
 superseded_by: null
-pr: null
 ---
 
 # Error translators stay duplicated, not table-driven

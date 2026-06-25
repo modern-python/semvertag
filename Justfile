@@ -15,6 +15,7 @@ lint-ci:
     uv run ruff format --check
     uv run ruff check --no-fix
     uv run ty check
+    uv run python planning/index.py --check
 
 test *args:
     uv run --no-sync pytest {{ args }}
@@ -29,6 +30,10 @@ publish:
 docs-build:
     uvx --with-requirements docs/requirements.txt mkdocs build --strict
 
-# Print the planning change index (grouped by status) to stdout.
+# Print the planning change index (flat, newest-first) to stdout.
 index:
     uv run python planning/index.py
+
+# Validate planning bundles + decisions; CI runs this.
+check-planning:
+    uv run python planning/index.py --check

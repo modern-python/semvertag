@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-05-31
-slug: usecase-callable
 summary: "Make the use-case a callable."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped in the pre-1.0 bootstrap (callable use-case)
 ---
 
 # `SemvertagUseCase` as a callable: separate init from invocation

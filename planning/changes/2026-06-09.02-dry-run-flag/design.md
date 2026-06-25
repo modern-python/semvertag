@@ -1,12 +1,5 @@
 ---
-status: shipped
-date: 2026-06-09
-slug: dry-run-flag
 summary: "`--dry-run` CLI flag: compute the next tag without creating it."
-supersedes: null
-superseded_by: null
-pr: null
-outcome: shipped (#15)
 ---
 
 # semvertag `--dry-run` flag — design

@@ -1,11 +1,8 @@
 ---
-status: accepted        # accepted | superseded
-date: 2026-06-23
-slug: forge-providers-not-unified
+status: accepted
 summary: Keep one provider class per forge; share only the Link-pagination loop, not a unified engine.
 supersedes: null
 superseded_by: null
-pr: 32
 ---
 
 # Forge providers stay separate; share only what's shared by standard

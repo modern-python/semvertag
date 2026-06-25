@@ -23,8 +23,7 @@ def collect_link_pages(  # noqa: PLR0913
     cross_origin_message: str,
     pagination_cap_message: str,
 ) -> list[_ItemT]:
-    """
-    Walk RFC 8288 Link-header pages, accumulating extracted items.
+    """Walk RFC 8288 Link-header pages, accumulating extracted items.
 
     Shared by every forge whose list endpoints paginate via Link headers
     (GitHub, GitLab both do, because it is a spec — not a coincidence). The
