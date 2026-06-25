@@ -1,9 +1,9 @@
 ---
-status: draft
+status: shipped
 date: 2026-06-25
 slug: tag-driven-release
 spec: tag-driven-release
-pr: null
+pr: 35
 ---
 
 # tag-driven-release — implementation plan
