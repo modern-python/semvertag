@@ -45,6 +45,18 @@ excluded from the mkdocs site automatically). When superpowers skills default to
 `docs/superpowers/specs/` or `docs/superpowers/plans/`, use the change bundle
 under `planning/changes/` here instead.
 
+**Cutting a release (maintainers)** is tag-driven via
+[`.github/workflows/release.yml`](.github/workflows/release.yml): write the
+notes at `planning/releases/<version>.md` (used verbatim as the GitHub Release
+body), then push a bare semver tag off green `main` —
+`git tag 0.9.0 && git push origin 0.9.0`. The workflow runs `just publish` (the
+tag sets the version via `uv version $GITHUB_REF_NAME`; no `pyproject.toml`
+bump) to PyPI, then creates the GitHub Release, then floats the `v0` action tag
+— PyPI first, so a failed publish creates no Release. Pre-releases use the
+PEP 440 form (`0.9.0rc1`, not `0.9.0-rc1`). PyPI is irreversible; there is no
+CI gate (a tag is the commitment point). The dogfood (`semvertag.yml`) runs in
+dry-run and never auto-tags, so the tag you push is the only tag.
+
 ## Commit messages
 
 Imperative present-tense, scoped where helpful:
@@ -95,8 +107,9 @@ Two distinct tag conventions coexist — confusing them is easy:
   strategy emits bare-semver tags by default; release URLs are
   `releases/tag/0.4.0`. When touching the CLI / `Justfile` / publish flow, think
   bare semver — `$GITHUB_REF_NAME` is `0.4.0`, not `v0.4.0`.
-- **Action floating tag: `v`-prefixed** (`v0`). `.github/workflows/tag-major.yml`
-  strips any leading `v` from the release tag then prepends `v` to the major
-  segment (`0.4.0` → `v0`), so consumers can pin `uses: modern-python/semvertag@v0`
-  per the GHA ecosystem convention. When touching `tag-major.yml` or
+- **Action floating tag: `v`-prefixed** (`v0`). The `Float major tag` step in
+  [`.github/workflows/release.yml`](.github/workflows/release.yml) prepends `v`
+  to the release tag's major segment (`0.4.0` → `v0`) and force-updates the
+  floating tag, so consumers can pin `uses: modern-python/semvertag@v0` per the
+  GHA ecosystem convention. Skipped on pre-releases. When touching that step or
   action-consumer docs, think `v`-prefix.

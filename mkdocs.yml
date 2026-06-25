@@ -11,8 +11,6 @@ nav:
   - Strategies:
     - Branch prefix: strategies/branch-prefix.md
     - Conventional commits: strategies/conventional-commits.md
-  - Contributing:
-    - Release runbook: contributing/release.md
 
 theme:
   name: material
