@@ -1,0 +1,79 @@
+name: Release
+
+# Tag-driven: pushing a bare semver tag publishes to PyPI, creates the matching
+# GitHub Release, and floats the `v0` action tag. Replaces the old
+# `release: published` publish.yml (deleted) and folds in tag-major.yml (deleted).
+#
+# The tag is the sole, deliberate entry point. semvertag.yml dogfoods in
+# DRY-RUN, so it never pushes a tag — only a maintainer's manual `git push` of
+# a tag reaches here (GitHub suppresses workflow triggers from
+# GITHUB_TOKEN-pushed refs, so even an auto-push would not fire this). By
+# convention a tag is cut only off green main, so there is no in-workflow CI gate.
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'               # stable:      0.9.0
+      - '[0-9]+.[0-9]+.[0-9]+[a-z]+[0-9]+'   # pre-release: 0.9.0rc1, 1.0.0a2
+
+# Needed for softprops/action-gh-release to create the Release and for the
+# v0 force-push.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: extractions/setup-just@v4
+      - uses: astral-sh/setup-uv@v7
+
+      # PyPI is irreversible, so it runs FIRST: if it fails the job stops and no
+      # GitHub Release or v0 move advertises a version that never reached PyPI.
+      # `just publish` derives the version from $GITHUB_REF_NAME (the tag name).
+      - run: just publish
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      # Description source: planning/releases/<tag>.md if present (verbatim, no
+      # auto-changelog appended); otherwise GitHub's generated notes. A tag with
+      # a letter (0.9.0rc1) is a pre-release -> flagged so GitHub won't mark it
+      # "Latest" and so the v0 float below is skipped.
+      - name: Resolve release metadata
+        id: meta
+        run: |
+          set -euo pipefail
+          notes="planning/releases/${GITHUB_REF_NAME}.md"
+          if [ -f "$notes" ]; then
+            echo "body_path=$notes" >> "$GITHUB_OUTPUT"
+            echo "generate_notes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "generate_notes=true" >> "$GITHUB_OUTPUT"
+          fi
+          if [[ "$GITHUB_REF_NAME" =~ [a-z] ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          body_path: ${{ steps.meta.outputs.body_path }}
+          generate_release_notes: ${{ steps.meta.outputs.generate_notes }}
+          prerelease: ${{ steps.meta.outputs.prerelease }}
+          draft: false
+
+      # Floating major tag (folded-in tag-major.yml): consumers pin
+      # `uses: modern-python/semvertag@v0` and ride minor bumps. Skipped on
+      # pre-releases so a 0.9.0rc1 doesn't drag v0 ahead of the latest stable.
+      # References HEAD (the tag commit), so no fetch-depth: 0 is needed.
+      - name: Float major tag
+        if: steps.meta.outputs.prerelease == 'false'
+        run: |
+          set -euo pipefail
+          major="v${GITHUB_REF_NAME%%.*}"      # 0.9.0 -> v0
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -fa "$major" -m "Update $major to $GITHUB_REF_NAME"
+          git push -f origin "$major"
