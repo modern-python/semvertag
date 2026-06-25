@@ -55,7 +55,10 @@ bump) to PyPI, then creates the GitHub Release, then floats the `v0` action tag
 — PyPI first, so a failed publish creates no Release. Pre-releases use the
 PEP 440 form (`0.9.0rc1`, not `0.9.0-rc1`). PyPI is irreversible; there is no
 CI gate (a tag is the commitment point). The dogfood (`semvertag.yml`) runs in
-dry-run and never auto-tags, so the tag you push is the only tag.
+dry-run and never auto-tags, so the tag you push is the only tag. If `just
+publish` succeeds but a later step fails (Release or `v0`), do **not** re-push
+the tag — PyPI rejects re-uploading an existing version. Create the GitHub
+Release and move `v0` by hand, or cut a new patch tag.
 
 ## Commit messages
 
