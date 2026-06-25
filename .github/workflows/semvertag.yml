@@ -1,25 +1,25 @@
 name: semvertag
 
-# Dogfood the local composite action against this repo. Auto-tags on
-# push to main when the latest commit is a merge from `feat/...` (minor
-# bump) or `bugfix/`/`hotfix/...` (patch). This repo's branch
-# convention uses `feat/...`, so SEMVERTAG_BRANCH_PREFIX__MINOR
+# Dogfood the local composite action against this repo in DRY-RUN: on every
+# push to main it computes the planned bump (exercising action.yml + the
+# published semvertag) but never pushes a tag. This keeps action.yml honest —
+# a breaking change fails the run before it can affect external users.
+#
+# Releases are NOT cut here. A release is a maintainer pushing a bare semver
+# tag by hand, which triggers .github/workflows/release.yml (PyPI + GitHub
+# Release + v0). Dry-run is load-bearing: it guarantees the only tags in the
+# repo are deliberate release tags — do not give this job a push token or
+# remove `dry-run: true`.
+#
+# This repo's branch convention uses `feat/...`, so SEMVERTAG_BRANCH_PREFIX__MINOR
 # overrides the default `feature/` mapping.
-#
-# The workflow only creates a tag — it does NOT trigger publish.yml,
-# which fires on GitHub release creation. To publish to PyPI, create a
-# GitHub release pointed at the auto-tagged commit.
-#
-# `uses: ./` exercises the action.yml in the current checkout, so any
-# breaking change to action.yml fails the dogfood run before it can
-# affect external users.
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: semvertag
@@ -33,5 +33,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./
+        with:
+          dry-run: true
         env:
           SEMVERTAG_BRANCH_PREFIX__MINOR: '["feat/"]'
