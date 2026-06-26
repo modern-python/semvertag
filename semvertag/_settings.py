@@ -152,7 +152,7 @@ class Settings(pydantic_settings.BaseSettings):
                 msg = "provider=github requires `repo` (set GITHUB_REPOSITORY or pass --repo OWNER/REPO)"
                 raise ValueError(msg)
             self._provider_target = GitHubTarget(repo=repo)
-        else:
+        else:  # gitlab — revisit this branch when adding a third provider to the Literal
             project_id = self.project_id
             if project_id is None:
                 msg = "provider=gitlab requires `project_id` (set CI_PROJECT_ID or pass --project-id N)"
