@@ -4,7 +4,7 @@ import httpware
 import modern_di
 from modern_di import Scope, providers
 
-from semvertag._settings import Settings
+from semvertag._settings import GitHubTarget, GitLabTarget, Settings
 from semvertag._use_case import SemvertagUseCase
 from semvertag.providers._base import Provider
 from semvertag.providers.github import GitHubProvider
@@ -54,24 +54,24 @@ def _build_current_provider(
 
     Both clients are eagerly resolved (modern-di Factory eagerly resolves all
     provider_kwargs in resolve()). That's acceptable — httpx2 connection pools
-    are lazy, so the unused client doesn't open sockets.
-
-    Only the active branch constructs a Provider instance; the assert serves
-    both as type-narrowing for `ty` and as a clear failure mode if the
-    Settings._resolve_provider validator's invariant ever breaks.
+    are lazy, so the unused client doesn't open sockets. The active forge is
+    the validated, narrowed Settings.provider_target; the match is exhaustive
+    over the closed ProviderTarget sum.
     """
-    if settings.provider == "github":
-        assert settings.repo is not None, "provider=github invariant: validator guarantees repo is set"  # noqa: S101
-        return GitHubProvider(
-            config=settings.github, repo=settings.repo, http=github_client, default_branch=settings.default_branch
-        )
-    assert settings.project_id is not None, "provider=gitlab invariant: validator guarantees project_id is set"  # noqa: S101
-    return GitLabProvider(
-        config=settings.gitlab,
-        project_id=settings.project_id,
-        http=gitlab_client,
-        default_branch=settings.default_branch,
-    )
+    match settings.provider_target:
+        case GitHubTarget(repo=repo):
+            return GitHubProvider(
+                config=settings.github, repo=repo, http=github_client, default_branch=settings.default_branch
+            )
+        case GitLabTarget(project_id=project_id):
+            return GitLabProvider(
+                config=settings.gitlab,
+                project_id=project_id,
+                http=gitlab_client,
+                default_branch=settings.default_branch,
+            )
+        case _:  # pragma: no cover
+            typing.assert_never(settings.provider_target)
 
 
 def _build_branch_prefix_strategy(settings: Settings) -> BranchPrefixStrategy:
