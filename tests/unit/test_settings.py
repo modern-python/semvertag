@@ -4,7 +4,7 @@ import pydantic
 import pytest
 
 from semvertag._errors import ConfigError
-from semvertag._settings import GitLabConfig, Settings, _apply_cli_overlay, load_settings
+from semvertag._settings import GitHubTarget, GitLabConfig, GitLabTarget, Settings, _apply_cli_overlay, load_settings
 
 
 _NESTED_TOKEN: typing.Final = "tok-nested"
@@ -292,3 +292,15 @@ def test_load_settings_translates_validation_error_to_config_error() -> None:
 def test_load_settings_translates_overlay_value_error_to_config_error() -> None:
     with pytest.raises(ConfigError):
         load_settings({"provider": "gitlab", "project_id": 1, "gitlab.foo.bar": "x"})
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_provider_target_is_github_target_for_github() -> None:
+    settings = Settings(provider="github", repo="o/r")
+    assert settings.provider_target == GitHubTarget(repo="o/r")
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_provider_target_is_gitlab_target_for_gitlab() -> None:
+    settings = Settings(provider="gitlab", project_id=_PROJECT_ID_INT_SEMVERTAG)
+    assert settings.provider_target == GitLabTarget(project_id=_PROJECT_ID_INT_SEMVERTAG)

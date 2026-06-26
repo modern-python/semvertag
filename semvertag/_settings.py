@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import os
 import typing
@@ -70,6 +71,19 @@ def _detect_provider_from_env() -> typing.Literal["gitlab", "github"]:
     return "gitlab"
 
 
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class GitHubTarget:
+    repo: str
+
+
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class GitLabTarget:
+    project_id: int
+
+
+ProviderTarget: typing.TypeAlias = GitHubTarget | GitLabTarget
+
+
 class Settings(pydantic_settings.BaseSettings):
     model_config = pydantic_settings.SettingsConfigDict(
         env_prefix=_ENV_PREFIX,
@@ -99,6 +113,13 @@ class Settings(pydantic_settings.BaseSettings):
     branch_prefix: BranchPrefixConfig = pydantic.Field(default_factory=BranchPrefixConfig)
     conventional_commits: ConventionalCommitsConfig = pydantic.Field(default_factory=ConventionalCommitsConfig)
 
+    _provider_target: ProviderTarget | None = pydantic.PrivateAttr(default=None)
+
+    @property
+    def provider_target(self) -> ProviderTarget:
+        assert self._provider_target is not None, "provider_target is set by _resolve_provider"  # noqa: S101
+        return self._provider_target
+
     @pydantic.field_validator("default_branch")
     @classmethod
     def _blank_default_branch_is_unset(cls, value: str | None) -> str | None:
@@ -125,12 +146,18 @@ class Settings(pydantic_settings.BaseSettings):
     def _resolve_provider(self) -> "Settings":
         if self.provider is None:
             self.provider = _detect_provider_from_env()
-        if self.provider == "github" and not self.repo:
-            msg = "provider=github requires `repo` (set GITHUB_REPOSITORY or pass --repo OWNER/REPO)"
-            raise ValueError(msg)
-        if self.provider == "gitlab" and self.project_id is None:
-            msg = "provider=gitlab requires `project_id` (set CI_PROJECT_ID or pass --project-id N)"
-            raise ValueError(msg)
+        if self.provider == "github":
+            repo = self.repo
+            if not repo:
+                msg = "provider=github requires `repo` (set GITHUB_REPOSITORY or pass --repo OWNER/REPO)"
+                raise ValueError(msg)
+            self._provider_target = GitHubTarget(repo=repo)
+        else:
+            project_id = self.project_id
+            if project_id is None:
+                msg = "provider=gitlab requires `project_id` (set CI_PROJECT_ID or pass --project-id N)"
+                raise ValueError(msg)
+            self._provider_target = GitLabTarget(project_id=project_id)
         return self
 
 
