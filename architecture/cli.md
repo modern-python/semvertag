@@ -42,10 +42,13 @@ error hierarchy to process exit codes; `BrokenPipeError` exits 0.
 The CLI resolves the use-case through `_resolve_use_case`, a
 `@modern_di_typer.inject`'d function with a `FromDI(SemvertagUseCase)` parameter.
 Because modern-di's `Factory` eagerly resolves all kwargs, both HTTP clients are
-constructed even though only one provider runs; this is safe (lazy httpx2 pools)
-and `_build_current_provider` carries `assert` guards on `repo` / `project_id`
-that both narrow types for `ty` and document the invariant the settings
-validator guarantees — the eager-resolution None-field guard.
+constructed even though only one provider runs; this is safe (lazy httpx2 pools).
+`Settings._resolve_provider` builds a discriminated `provider_target` — either
+`GitHubTarget(repo=…)` or `GitLabTarget(project_id=…)` — with a non-optional id
+field, so the invariant is enforced once, in the validator. `_build_current_provider`
+matches `settings.provider_target` exhaustively (closed sum; `case _:
+typing.assert_never(…)`) and carries no `assert` guards on `repo` /
+`project_id`; `ty` is satisfied by the match binding.
 
 ## Settings
 

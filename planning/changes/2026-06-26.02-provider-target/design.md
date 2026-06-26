@@ -1,5 +1,5 @@
 ---
-summary: Replace the duplicated provider invariant (validator + two ioc asserts) with a discriminated ProviderTarget the validator builds and ioc matches exhaustively.
+summary: Replaced the duplicated provider invariant (validator + two ioc asserts) with a discriminated ProviderTarget the validator builds and ioc matches exhaustively; the asserts are gone and the invariant lives only in the validator.
 ---
 
 # Design: Encode the provider invariant in a `ProviderTarget` type
