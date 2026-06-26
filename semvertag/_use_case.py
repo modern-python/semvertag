@@ -22,13 +22,14 @@ class SemvertagUseCase:
 
         output.progress("Fetching tag history...")
         tags: typing.Final = self.provider.list_tags()
-        latest_semver_tag: typing.Final = _pick_latest_semver_tag(tags)
+        selected: typing.Final = _select_latest_semver_tag(tags)
 
-        if latest_semver_tag is None:
+        if selected is None:
             return self._emit(output, NoTags(commit=commit.sha))
 
-        if latest_semver_tag.commit_sha == commit.sha:
-            return self._emit(output, AlreadyTagged(tag=latest_semver_tag.name, commit=commit.sha))
+        latest_tag, latest_version = selected
+        if latest_tag.commit_sha == commit.sha:
+            return self._emit(output, AlreadyTagged(tag=latest_tag.name, commit=commit.sha))
 
         output.progress("Computing bump...")
         bump: typing.Final = self.strategy.decide(commit)
@@ -38,7 +39,7 @@ class SemvertagUseCase:
                 NoBump(status=self.strategy.no_bump_status, reason=self.strategy.no_bump_reason, commit=commit.sha),
             )
 
-        new_version: typing.Final = _compute_new_version(latest_semver_tag, bump)
+        new_version: typing.Final = _compute_new_version(latest_version, bump)
         if dry_run:
             return self._emit(output, DryRun(tag=new_version, bump=bump, commit=commit.sha))
 
@@ -51,35 +52,27 @@ class SemvertagUseCase:
         return outcome
 
 
-def _pick_latest_semver_tag(tags: list[Tag]) -> Tag | None:
-    parsed: typing.Final = [(version, tag) for tag, version in _parse_semver_tags(tags)]
+def _select_latest_semver_tag(tags: list[Tag]) -> tuple[Tag, semver.Version] | None:
+    parsed: list[tuple[semver.Version, Tag]] = []
+    for tag in tags:
+        try:
+            version = semver.Version.parse(tag.name)
+        except ValueError:
+            continue
+        parsed.append((version, tag))
     if not parsed:
         return None
     parsed.sort(key=lambda item: item[0])
-    return parsed[-1][1]
+    version, tag = parsed[-1]
+    return tag, version
 
 
-def _parse_semver_tags(tags: list[Tag]) -> typing.Iterator[tuple[Tag, semver.Version]]:
-    for tag in tags:
-        version = _try_parse_semver(tag.name)
-        if version is not None:
-            yield tag, version
-
-
-def _try_parse_semver(name: str) -> semver.Version | None:
-    try:
-        return semver.Version.parse(name)
-    except ValueError:
-        return None
-
-
-_BUMP_FUNCTIONS: typing.Final[dict[Bump, typing.Callable[[semver.Version], semver.Version]]] = {
-    Bump.MAJOR: semver.Version.bump_major,
-    Bump.MINOR: semver.Version.bump_minor,
-    Bump.PATCH: semver.Version.bump_patch,
+_BUMP_PARTS: typing.Final[dict[Bump, str]] = {
+    Bump.MAJOR: "major",
+    Bump.MINOR: "minor",
+    Bump.PATCH: "patch",
 }
 
 
-def _compute_new_version(last_tag: Tag, bump: Bump) -> str:
-    version: typing.Final = semver.Version.parse(last_tag.name)
-    return str(_BUMP_FUNCTIONS[bump](version))
+def _compute_new_version(version: semver.Version, bump: Bump) -> str:
+    return str(version.next_version(_BUMP_PARTS[bump]))

@@ -2,10 +2,11 @@ import dataclasses
 import typing
 
 import pytest
+import semver
 
 from semvertag._outcome import AlreadyTagged, Created, DryRun, NoBump, NoTags, Outcome
 from semvertag._types import Bump, CheckResult, Commit, Tag
-from semvertag._use_case import SemvertagUseCase
+from semvertag._use_case import SemvertagUseCase, _compute_new_version, _select_latest_semver_tag
 
 
 _MERGE_MESSAGE: typing.Final = "Merge branch 'feature/foo' into main"
@@ -291,3 +292,45 @@ def test_dry_run_false_default_creates_tag() -> None:
 
     assert isinstance(result, Created)
     assert provider.create_tag_calls == [(_EXPECTED_NEW_TAG, _LATEST_SHA)]
+
+
+def test_select_latest_returns_none_for_empty() -> None:
+    assert _select_latest_semver_tag([]) is None
+
+
+def test_select_latest_returns_none_when_all_unparseable() -> None:
+    tags = [
+        Tag(name="release-2024-Q1", commit_sha="a"),
+        Tag(name="latest", commit_sha="b"),
+        Tag(name="v0", commit_sha="c"),
+    ]
+    assert _select_latest_semver_tag(tags) is None
+
+
+def test_select_latest_skips_pep440_prerelease() -> None:
+    tags = [Tag(name="0.8.1", commit_sha="a"), Tag(name="0.9.0rc1", commit_sha="b")]
+    selected = _select_latest_semver_tag(tags)
+    assert selected is not None
+    tag, version = selected
+    assert tag.name == "0.8.1"
+    assert version == semver.Version.parse("0.8.1")
+
+
+def test_select_latest_includes_semver_form_prerelease_in_ordering() -> None:
+    tags = [Tag(name="1.0.0-rc.1", commit_sha="a"), Tag(name="0.9.0", commit_sha="b")]
+    selected = _select_latest_semver_tag(tags)
+    assert selected is not None
+    tag, _version = selected
+    assert tag.name == "1.0.0-rc.1"
+
+
+def test_select_latest_tie_keeps_last_in_input() -> None:
+    tags = [Tag(name="1.0.0+a", commit_sha="x"), Tag(name="1.0.0+b", commit_sha="y")]
+    selected = _select_latest_semver_tag(tags)
+    assert selected is not None
+    tag, _version = selected
+    assert tag.commit_sha == "y"
+
+
+def test_compute_new_version_finalizes_semver_prerelease() -> None:
+    assert _compute_new_version(semver.Version.parse("1.0.0-rc.1"), Bump.PATCH) == "1.0.0"
