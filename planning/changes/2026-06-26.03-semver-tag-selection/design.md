@@ -1,5 +1,5 @@
 ---
-summary: Fold the four-helper semver-tag-selection chain into one selector that carries the parsed Version (killing the double-parse), and finalize prerelease baselines via next_version.
+summary: Folded the tag-selection chain into _select_latest_semver_tag, which carries the parsed Version to _compute_new_version; next_version finalizes SemVer-form prerelease baselines.
 ---
 
 # Design: Deepen the semver-tag selection chain

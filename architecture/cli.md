@@ -90,15 +90,20 @@ a `provider` and a `strategy`; calling it (`__call__(*, output, dry_run=False)
 -> Outcome`) is the whole orchestration:
 
 1. fetch the latest commit on the default branch;
-2. list tags and pick the highest semver-parseable one (`_pick_latest_semver_tag`
-   sorts by `semver.Version`; unparseable names are skipped);
+2. list tags and select the highest semver-parseable one — `_select_latest_semver_tag`
+   parses each tag via `semver.Version.parse`, skipping non-SemVer names (PEP 440
+   prereleases such as `0.9.0rc1` and `v`-prefixed tags such as `v0`), sorts by
+   `semver.Version` precedence (last-equal-wins on build-metadata ties), and returns
+   the winning `Tag` together with its parsed `Version`;
 3. early no-bump exits — `NoTags` when there is no prior semver tag (it does
    **not** seed an initial tag in v1.0), `AlreadyTagged` when the head commit
    already carries the latest tag;
 4. ask the strategy for a `Bump`; `Bump.NONE` exits with `NoBump`, carrying the
    strategy's own status/reason;
-5. compute the new version (`_compute_new_version` via `semver`'s
-   `bump_major/minor/patch`);
+5. compute the new version — `_compute_new_version` applies `Version.next_version`
+   to the `Version` carried from step 2 (finalizing a SemVer-form prerelease
+   baseline such as `1.0.0-rc.1` to `1.0.0`; identical to `bump_*` on stable
+   baselines), so the winning tag is never parsed twice;
 6. if `dry_run`, return `DryRun`; else `provider.create_tag` and return
    `Created`.
 
