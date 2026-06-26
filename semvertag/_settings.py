@@ -5,6 +5,7 @@ import typing
 import pydantic
 import pydantic_settings
 
+from semvertag._errors import ConfigError
 from semvertag.strategies.branch_prefix import BranchPrefixConfig
 from semvertag.strategies.conventional_commits import ConventionalCommitsConfig
 
@@ -151,3 +152,32 @@ def apply_cli_overlay(settings: Settings, overrides: dict[str, typing.Any]) -> S
     # Re-validate to trigger field validators (e.g. _clamp_request_timeout).
     # getattr (not model_dump) preserves live SecretStr values.
     return type(settings).model_validate({name: getattr(copied, name) for name in type(copied).model_fields})
+
+
+def _config_error_from_validation(exc: pydantic.ValidationError) -> ConfigError:
+    first: typing.Final = exc.errors()[0]
+    loc: typing.Final = ".".join(str(part) for part in first.get("loc", ()))
+    detail: typing.Final = first.get("msg", "invalid value")
+    msg: typing.Final = f"Configuration error at '{loc}': {detail}. Check environment variables and command-line flags."
+    return ConfigError(msg)
+
+
+def load_settings(cli_overrides: dict[str, typing.Any], *, token: str | None = None) -> Settings:
+    """Build a validated Settings from environment + CLI overrides.
+
+    Owns the whole pipeline: split top-level vs dotted once, construct (env +
+    top-level), overlay nested, then route --token to the resolved provider.
+    Raises only ConfigError on any invalid input.
+    """
+    top_overrides: typing.Final = {k: v for k, v in cli_overrides.items() if "." not in k}
+    nested_overrides: typing.Final = {k: v for k, v in cli_overrides.items() if "." in k}
+    try:
+        settings = Settings(**top_overrides)
+        settings = apply_cli_overlay(settings, nested_overrides)
+        if token is not None:
+            settings = apply_cli_overlay(settings, {f"{settings.provider}.token": pydantic.SecretStr(token)})
+    except pydantic.ValidationError as exc:
+        raise _config_error_from_validation(exc) from exc
+    except ValueError as exc:  # _apply_cli_overlay depth-2 guard; ValidationError caught above
+        raise ConfigError(str(exc)) from exc
+    return settings

@@ -3,7 +3,8 @@ import typing
 import pydantic
 import pytest
 
-from semvertag._settings import GitLabConfig, Settings, apply_cli_overlay
+from semvertag._errors import ConfigError
+from semvertag._settings import GitLabConfig, Settings, apply_cli_overlay, load_settings
 
 
 _NESTED_TOKEN: typing.Final = "tok-nested"
@@ -244,3 +245,50 @@ def test_repo_alias_picks_up_github_repository_env(monkeypatch: pytest.MonkeyPat
     settings = Settings()
     assert settings.repo == "octocat/Hello-World"
     assert settings.provider == "github"
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_load_settings_cli_overrides_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SEMVERTAG_STRATEGY", "conventional-commits")
+    settings = load_settings({"strategy": "branch-prefix", "provider": "gitlab", "project_id": 1})
+    assert settings.strategy == "branch-prefix"
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_load_settings_uses_defaults_when_unset() -> None:
+    settings = load_settings({"provider": "gitlab", "project_id": 1})
+    assert settings.request_timeout == _TIMEOUT_DEFAULT_VALUE
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_load_settings_routes_token_to_explicit_github() -> None:
+    settings = load_settings({"provider": "github", "repo": "o/r"}, token=_PLAINTEXT_SECRET)
+    assert settings.github.token.get_secret_value() == _PLAINTEXT_SECRET
+    assert settings.gitlab.token.get_secret_value() == ""
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_load_settings_routes_token_to_explicit_gitlab() -> None:
+    settings = load_settings({"provider": "gitlab", "project_id": 1}, token=_PLAINTEXT_SECRET)
+    assert settings.gitlab.token.get_secret_value() == _PLAINTEXT_SECRET
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_load_settings_routes_token_to_autodetected_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GITLAB_CI", raising=False)
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    settings = load_settings({"repo": "o/r"}, token=_PLAINTEXT_SECRET)
+    assert settings.provider == "github"
+    assert settings.github.token.get_secret_value() == _PLAINTEXT_SECRET
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_load_settings_translates_validation_error_to_config_error() -> None:
+    with pytest.raises(ConfigError):
+        load_settings({"provider": "gitlab"})  # gitlab requires project_id
+
+
+@pytest.mark.usefixtures("clean_settings_env")
+def test_load_settings_translates_overlay_value_error_to_config_error() -> None:
+    with pytest.raises(ConfigError):
+        load_settings({"provider": "gitlab", "project_id": 1, "gitlab.foo.bar": "x"})
