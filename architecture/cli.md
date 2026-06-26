@@ -103,7 +103,9 @@ a `provider` and a `strategy`; calling it (`__call__(*, output, dry_run=False)
 5. compute the new version — `_compute_new_version` applies `Version.next_version`
    to the `Version` carried from step 2 (finalizing a SemVer-form prerelease
    baseline such as `1.0.0-rc.1` to `1.0.0`; identical to `bump_*` on stable
-   baselines), so the winning tag is never parsed twice;
+   baselines without build metadata — the selector strips build metadata via
+   `.replace(build=None)`, so the carried `Version` is always build-free), so the
+   winning tag is never parsed twice;
 6. if `dry_run`, return `DryRun`; else `provider.create_tag` and return
    `Created`.
 

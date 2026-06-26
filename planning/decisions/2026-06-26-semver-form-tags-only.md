@@ -38,10 +38,18 @@ precedence, and the format it should expect in a managed repo is SemVer-form. Th
 discriminating "shared by standard, not by coincidence" lens applies:
 
 - **`next_version` (chosen) is feasible, dependency-free, and behavior-preserving
-  for every current tag.** On a stable baseline `next_version(part)` equals
-  `bump_*` exactly; it differs only by finalizing a SemVer-form prerelease
-  baseline — which is the correct release-ramp semantics and the bug the review
-  found. No new dependency, no new version model.
+  for every current tag.** On a stable baseline **without build metadata**
+  `next_version(part)` equals `bump_*` exactly; it differs only by finalizing a
+  SemVer-form prerelease baseline — which is the correct release-ramp semantics
+  and the bug the review found. The selector strips build metadata
+  (`.replace(build=None)`) before carrying the `Version`, so a hand-pushed
+  `1.0.0+build`-style tag (SemVer-valid, precedence-irrelevant) is carried as
+  `1.0.0` and bumps correctly to `1.0.1`; semvertag never emits build metadata,
+  so stripping is safe. A SemVer-form prerelease baseline also finalizes on
+  major/minor/patch alike (e.g. `1.0.0-rc.1` + major → `1.0.0`, not `2.0.0`,
+  because the lower parts are already zero) — defensible release-ramp semantics,
+  dormant because semvertag never self-emits prereleases. No new dependency, no
+  new version model.
 - **(b) PEP 440 recognition is rejected** because `python-semver` has no PEP 440
   parser (the `coerce` recipe extracts only `major.minor.patch` and *discards* the
   `rc1`, making a prerelease masquerade as final — unusable). Real support needs

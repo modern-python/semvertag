@@ -56,7 +56,7 @@ def _select_latest_semver_tag(tags: list[Tag]) -> tuple[Tag, semver.Version] | N
     parsed: list[tuple[semver.Version, Tag]] = []
     for tag in tags:
         try:
-            version = semver.Version.parse(tag.name)
+            version = semver.Version.parse(tag.name).replace(build=None)
         except ValueError:
             continue
         parsed.append((version, tag))

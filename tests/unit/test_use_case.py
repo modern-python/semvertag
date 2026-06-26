@@ -334,3 +334,18 @@ def test_select_latest_tie_keeps_last_in_input() -> None:
 
 def test_compute_new_version_finalizes_semver_prerelease() -> None:
     assert _compute_new_version(semver.Version.parse("1.0.0-rc.1"), Bump.PATCH) == "1.0.0"
+
+
+def test_select_latest_strips_build_metadata() -> None:
+    selected = _select_latest_semver_tag([Tag(name="1.2.3+build.4", commit_sha="a")])
+    assert selected is not None
+    _tag, version = selected
+    assert version.build is None
+    assert version == semver.Version.parse("1.2.3")
+
+
+def test_build_metadata_baseline_still_bumps() -> None:
+    selected = _select_latest_semver_tag([Tag(name="1.2.3+build.4", commit_sha="a")])
+    assert selected is not None
+    _tag, version = selected
+    assert _compute_new_version(version, Bump.PATCH) == "1.2.4"

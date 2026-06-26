@@ -46,8 +46,11 @@ four-hop chain.
   `decisions/2026-06-26-semver-form-tags-only.md` (rejected / deferred). Selection
   stays SemVer-form only.
 - No change to the `Outcome` variants, the providers, strategies, output, or DI.
-- No change for *stable* baselines: `next_version(part)` equals `bump_*` there, so
-  every existing bare-semver tag behaves identically.
+- No change for *stable* baselines **without build metadata**: `next_version(part)`
+  equals `bump_*` there, so every existing bare-semver tag behaves identically. The
+  selector strips build metadata (precedence-irrelevant; semvertag never emits it),
+  so the carried `Version` is always build-free and `next_version` is never tripped
+  by a `1.0.0+build`-style tag.
 
 ## Design
 
@@ -61,7 +64,7 @@ def _select_latest_semver_tag(tags: list[Tag]) -> tuple[Tag, semver.Version] | N
     parsed: list[tuple[semver.Version, Tag]] = []
     for tag in tags:
         try:
-            version = semver.Version.parse(tag.name)
+            version = semver.Version.parse(tag.name).replace(build=None)
         except ValueError:
             continue
         parsed.append((version, tag))
@@ -73,7 +76,11 @@ def _select_latest_semver_tag(tags: list[Tag]) -> tuple[Tag, semver.Version] | N
 ```
 
 `sorted(...)[-1]` (not `max`) preserves the current **last-equal-wins** tie order
-for versions that compare equal (build metadata is ignored in precedence).
+for versions that compare equal (build metadata is ignored in precedence). The
+`.replace(build=None)` strips build metadata from the carried `Version` so that
+`next_version` never treats a `1.0.0+build`-style baseline as already-finalized
+and skips the bump. semvertag never emits build metadata; stripping it is
+precedence-neutral.
 
 ### 2. Bump via `next_version`, on the carried `Version`
 

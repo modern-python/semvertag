@@ -21,9 +21,11 @@ prerelease baselines via `next_version`.
 - Python imports at MODULE LEVEL only; every test function argument annotated.
 - `just test` enforces `fail_under = 100` branch coverage.
 - BEHAVIOR-PRESERVING **except** the one deliberate change: `next_version` instead
-  of `bump_*`, which equals `bump_*` on every stable baseline and differs only by
-  finalizing SemVer-form prerelease baselines. No change to `Outcome`, providers,
-  strategies, output, or DI.
+  of `bump_*`, which equals `bump_*` on stable baselines **without build metadata**
+  and differs only by finalizing SemVer-form prerelease baselines. The selector
+  strips build metadata (`.replace(build=None)`) so the carried `Version` is always
+  build-free; a hand-pushed `1.0.0+build` tag therefore bumps correctly to `1.0.1`.
+  No change to `Outcome`, providers, strategies, output, or DI.
 - Selection stays **SemVer-form only** — no PEP 440 / `v`-prefix recognition (per
   the decision record).
 - Tie order: `sorted(...)[-1]` (last-equal-wins) — do NOT use `max()`.
