@@ -1,5 +1,5 @@
 ---
-summary: Consolidate the env→CLI→validate→token settings pipeline behind one deep load_settings entry point that raises only ConfigError.
+summary: Consolidated the env→CLI→validate→token settings pipeline behind one load_settings entry point raising only ConfigError; the CLI callback shrank to collect→load→map→stash and the overlay went private.
 ---
 
 # Design: Consolidate the settings pipeline behind `load_settings`

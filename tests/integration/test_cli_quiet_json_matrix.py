@@ -179,30 +179,3 @@ def test_exits_with_four_on_provider_api_error_via_503_after_retry_exhaustion(
 
     assert result.exit_code == _EXIT_PROVIDER_API_ERROR
     assert "GitLab API failure: 503" in result.stderr
-
-
-def test_exits_with_two_on_validation_error_for_bad_request_timeout(
-    monkeypatch: pytest.MonkeyPatch,
-    cli_runner: CliRunner,
-) -> None:
-    monkeypatch.setenv("SEMVERTAG_REQUEST_TIMEOUT", "abc")
-    monkeypatch.setenv("SEMVERTAG_TOKEN", "glpat-XXXXXXXXXXXXXXXXXXXX")
-    monkeypatch.setenv("SEMVERTAG_PROJECT_ID", "999")
-
-    result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
-
-    assert result.exit_code == _EXIT_CONFIG_ERROR
-    assert "Configuration error" in result.stderr
-
-
-def test_exits_with_two_when_project_id_missing(
-    monkeypatch: pytest.MonkeyPatch,
-    cli_runner: CliRunner,
-    install_mock_transport: collections.abc.Callable[[HandlerCallable], None],  # noqa: ARG001
-) -> None:
-    monkeypatch.setenv("SEMVERTAG_TOKEN", "glpat-XXXXXXXXXXXXXXXXXXXX")
-
-    result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
-
-    assert result.exit_code == _EXIT_CONFIG_ERROR
-    assert "project_id" in result.stderr

@@ -60,14 +60,25 @@ auto-detects the provider from CI env (`GITHUB_ACTIONS` / `GITLAB_CI`) when
 unset and enforces that github needs `repo` and gitlab needs `project_id`. A
 field validator clamps `request_timeout` to a 10-second ceiling.
 
-CLI flags are applied *over* the env-built settings by `apply_cli_overlay`,
-which is built on `model_copy(update=...)`: it splits dotted keys
-(`gitlab.endpoint`) into nested sub-model copies, copies the top-level fields,
-then re-validates the whole model so field/model validators fire again on the
-merged result. Precedence is therefore **CLI over env over default** — env (and
-defaults) build the base instance, then non-`None` CLI overrides overwrite it.
-`--token` is applied in a second overlay pass routed to the *resolved* active
-provider (`{provider}.token`), so one flag lands on whichever forge is active.
+The entire env + CLI pipeline is owned by the public function
+`load_settings(cli_overrides, *, token=None) -> Settings`. It is the single
+entry point that `_main_callback` calls after collecting flags via
+`_collect_overrides`. Internally it splits `cli_overrides` once into top-level
+(no `.`) and nested (dotted) maps, constructs `Settings(**top_level)` so
+pydantic reads the environment and top-level overrides together, then applies
+the nested map through the internal helper `_apply_cli_overlay`. The helper is
+built on `model_copy(update=...)`: it copies nested sub-model objects for dotted
+keys (`gitlab.endpoint`) and the top-level fields, then re-validates the whole
+model so field and model validators fire again on the merged result. If `--token`
+is supplied, a final overlay routes it to `{settings.provider}.token` — applied
+after the provider is resolved, so it lands on whichever forge is active
+regardless of whether the provider was explicit or auto-detected. Precedence is
+therefore **CLI over env over default** — env (and defaults) build the base
+instance, then non-`None` CLI overrides overwrite it. All failure modes
+(`pydantic.ValidationError` from construction or the overlay's re-validate, and
+`ValueError` from the nesting-depth-2 guard) are translated inside
+`load_settings` and raised only as `ConfigError`; pydantic is an
+implementation detail invisible above the `_settings.py` module boundary.
 
 ## Use-case
 
