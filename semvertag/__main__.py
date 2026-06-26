@@ -2,13 +2,12 @@ import importlib.metadata
 import typing
 
 import modern_di_typer
-import pydantic
 import typer
 
 from semvertag import ioc
 from semvertag._errors import ConfigError, SemvertagError
 from semvertag._output import Output, build_json_output, build_rich_output
-from semvertag._settings import Settings, apply_cli_overlay
+from semvertag._settings import Settings, load_settings
 from semvertag._use_case import SemvertagUseCase
 
 
@@ -67,14 +66,6 @@ def _collect_overrides(  # noqa: PLR0913
     return overrides
 
 
-def _config_error_from_validation(exc: pydantic.ValidationError) -> ConfigError:
-    first: typing.Final = exc.errors()[0]
-    loc: typing.Final = ".".join(str(part) for part in first.get("loc", ()))
-    detail: typing.Final = first.get("msg", "invalid value")
-    msg: typing.Final = f"Configuration error at '{loc}': {detail}. Check environment variables and command-line flags."
-    return ConfigError(msg)
-
-
 @MAIN_APP.callback()
 def _main_callback(  # noqa: PLR0913
     ctx: typer.Context,
@@ -122,34 +113,18 @@ def _main_callback(  # noqa: PLR0913
     if ctx.resilient_parsing:
         return
 
+    overrides = _collect_overrides(
+        project_id=project_id,
+        strategy=strategy,
+        default_branch=default_branch,
+        gitlab_endpoint=gitlab_endpoint,
+        github_endpoint=github_endpoint,
+        provider=provider,
+        repo=repo,
+        request_timeout=request_timeout,
+    )
     try:
-        overrides = _collect_overrides(
-            project_id=project_id,
-            strategy=strategy,
-            default_branch=default_branch,
-            gitlab_endpoint=gitlab_endpoint,
-            github_endpoint=github_endpoint,
-            provider=provider,
-            repo=repo,
-            request_timeout=request_timeout,
-        )
-        # Build Settings with top-level CLI overrides merged in one validation
-        # pass so that --provider github --repo owner/repo can satisfy the model
-        # validator even when the environment alone would fail (e.g. no
-        # CI_PROJECT_ID in a non-GitLab-CI shell).
-        top_overrides = {k: v for k, v in overrides.items() if "." not in k}
-        settings = Settings(**top_overrides)
-        try:
-            settings = apply_cli_overlay(settings, {k: v for k, v in overrides.items() if "." in k})
-            # Second pass: route --token to the resolved active provider.
-            if token is not None:
-                settings = apply_cli_overlay(settings, {f"{settings.provider}.token": pydantic.SecretStr(token)})
-        except ValueError as exc:
-            raise ConfigError(str(exc)) from exc
-    except pydantic.ValidationError as exc:
-        err = _config_error_from_validation(exc)
-        typer.echo(f"Error: {err}", err=True)
-        raise typer.Exit(code=err.exit_code) from err
+        settings = load_settings(overrides, token=token)
     except ConfigError as err:
         typer.echo(f"Error: {err}", err=True)
         raise typer.Exit(code=err.exit_code) from err

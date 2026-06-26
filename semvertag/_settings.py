@@ -134,7 +134,7 @@ class Settings(pydantic_settings.BaseSettings):
         return self
 
 
-def apply_cli_overlay(settings: Settings, overrides: dict[str, typing.Any]) -> Settings:
+def _apply_cli_overlay(settings: Settings, overrides: dict[str, typing.Any]) -> Settings:
     top_updates: dict[str, typing.Any] = {}
     nested_updates: dict[str, dict[str, typing.Any]] = {}
     for dotted_key, value in overrides.items():
@@ -173,9 +173,9 @@ def load_settings(cli_overrides: dict[str, typing.Any], *, token: str | None = N
     nested_overrides: typing.Final = {k: v for k, v in cli_overrides.items() if "." in k}
     try:
         settings = Settings(**top_overrides)
-        settings = apply_cli_overlay(settings, nested_overrides)
+        settings = _apply_cli_overlay(settings, nested_overrides)
         if token is not None:
-            settings = apply_cli_overlay(settings, {f"{settings.provider}.token": pydantic.SecretStr(token)})
+            settings = _apply_cli_overlay(settings, {f"{settings.provider}.token": pydantic.SecretStr(token)})
     except pydantic.ValidationError as exc:
         raise _config_error_from_validation(exc) from exc
     except ValueError as exc:  # _apply_cli_overlay depth-2 guard; ValidationError caught above

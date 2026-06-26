@@ -101,7 +101,7 @@ def test_overlay_value_error_is_rewrapped_as_config_error(
         msg = "forced overlay failure"
         raise ValueError(msg)
 
-    monkeypatch.setattr("semvertag.__main__.apply_cli_overlay", raise_value_error)
+    monkeypatch.setattr("semvertag._settings._apply_cli_overlay", raise_value_error)
     result: typing.Final = cli_runner.invoke(MAIN_APP, ["tag"])
     assert result.exit_code == _EXIT_CONFIG_ERROR, result.output
     assert "forced overlay failure" in result.stderr
