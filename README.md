@@ -1,4 +1,10 @@
-# semvertag
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/modern-python/.github/main/brand/projects/semvertag/lockup-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/modern-python/.github/main/brand/projects/semvertag/lockup-light.svg">
+    <img alt="semvertag" src="https://raw.githubusercontent.com/modern-python/.github/main/brand/projects/semvertag/lockup.png" width="420">
+  </picture>
+</p>
 
 [![PyPI version](https://img.shields.io/pypi/v/semvertag.svg)](https://pypi.org/project/semvertag/)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/semvertag.svg)](https://pypi.org/project/semvertag/)
