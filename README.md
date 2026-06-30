@@ -8,7 +8,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/semvertag.svg)](https://pypi.org/project/semvertag/)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/semvertag.svg)](https://pypi.org/project/semvertag/)
-[![Downloads](https://img.shields.io/pypi/dm/semvertag.svg)](https://pypistats.org/packages/semvertag)
+[![Downloads](https://static.pepy.tech/badge/semvertag/month)](https://pepy.tech/projects/semvertag)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/modern-python/semvertag/actions/workflows/ci.yml)
 [![CI](https://github.com/modern-python/semvertag/actions/workflows/ci.yml/badge.svg)](https://github.com/modern-python/semvertag/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/modern-python/semvertag.svg)](https://github.com/modern-python/semvertag/blob/main/LICENSE)
