@@ -16,13 +16,15 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+[a-z]+[0-9]+'   # pre-release: 0.9.0rc1, 1.0.0a2
 
 # Needed for softprops/action-gh-release to create the Release and for the
-# v0 force-push.
+# v0 force-push. id-token: write -> OIDC for PyPI Trusted Publishing.
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: pypi  # scopes the PyPI Trusted Publisher; hook for approval rules
     steps:
       - uses: actions/checkout@v6
       - uses: extractions/setup-just@v4
@@ -50,9 +52,9 @@ jobs:
       # PyPI is irreversible, so it runs FIRST: if it fails the job stops and no
       # GitHub Release or v0 move advertises a version that never reached PyPI.
       # `just publish` derives the version from $GITHUB_REF_NAME (the tag name).
+      # Auth via PyPI Trusted Publishing (OIDC); no PYPI_TOKEN. Needs a Trusted
+      # Publisher on the semvertag PyPI project (env: pypi, workflow: release.yml).
       - run: just publish
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
       # Description source: planning/releases/<tag>.md if present (verbatim, no
       # auto-changelog appended); otherwise GitHub's generated notes. A tag with
