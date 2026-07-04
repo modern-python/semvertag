@@ -1,4 +1,11 @@
-# semvertag
+<div class="mp-hero" markdown>
+
+<h1 class="mp-lockup">
+<img class="mp-logo mp-logo--light" src="assets/lockup-light.svg" alt="semvertag">
+<img class="mp-logo mp-logo--dark" src="assets/lockup-dark.svg" alt="" aria-hidden="true">
+</h1>
+
+</div>
 
 Auto-tag your GitLab repository with semantic version tags from CI —
 one tool, two strategies.
