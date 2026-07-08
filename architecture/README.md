@@ -22,4 +22,4 @@ it got here*; this directory records *what it is*.
 When a change alters a capability's behavior, hand-edit the matching
 `architecture/<capability>.md` in the **same PR** as the code, reviewed in the
 same diff — never as a separate post-merge step. That hand-edit is what keeps
-this directory true; the change bundle in `planning/changes/` stays as the *why*.
+this directory true; the change file in `planning/changes/` stays as the *why*.

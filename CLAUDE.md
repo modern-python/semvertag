@@ -29,8 +29,8 @@ portable two-axis planning convention. `architecture/` (repo root) is the living
 truth home; `planning/` records *how it got there*. **Start at the
 [Quick path](planning/README.md#quick-path-start-here)** in
 [`planning/README.md`](planning/README.md) to choose a lane (Full / Lightweight /
-Tiny), create a bundle, and ship — that file is the authoritative spec. Run
-`just check-planning` to validate bundles and `just index` to print the change
+Tiny), create a change file, and ship — that file is the authoritative spec. Run
+`just check-planning` to validate changes and `just index` to print the change
 listing.
 
 Per feature: brainstorming → `design.md` → writing-plans → `plan.md` →
@@ -42,7 +42,7 @@ and a subagent code review before landing (`superpowers:requesting-code-review`)
 
 Planning artifacts live under `planning/` (not `docs/`, so they're excluded from
 the mkdocs site automatically). When superpowers skills default to
-`docs/superpowers/specs/` or `docs/superpowers/plans/`, use the change bundle
+`docs/superpowers/specs/` or `docs/superpowers/plans/`, use the change file
 under `planning/changes/` here instead.
 
 **Cutting a release (maintainers)** is tag-driven via
