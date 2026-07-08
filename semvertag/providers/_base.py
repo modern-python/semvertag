@@ -4,7 +4,8 @@ from semvertag._types import Commit, Tag
 
 
 class Provider(typing.Protocol):
-    name: str
+    @property
+    def name(self) -> str: ...
 
     def get_default_branch(self) -> str: ...
     def get_latest_commit_on_default_branch(self) -> Commit: ...

@@ -4,8 +4,11 @@ from semvertag._types import Bump, Commit
 
 
 class BumpStrategy(typing.Protocol):
-    name: str
-    no_bump_status: str
-    no_bump_reason: str
+    @property
+    def name(self) -> str: ...
+    @property
+    def no_bump_status(self) -> str: ...
+    @property
+    def no_bump_reason(self) -> str: ...
 
     def decide(self, commit: Commit) -> Bump: ...
