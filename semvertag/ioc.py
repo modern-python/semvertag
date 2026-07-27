@@ -101,13 +101,13 @@ class ProvidersGroup(modern_di.Group):
         scope=Scope.APP,
         creator=_build_gitlab_client,
         bound_type=None,
-        cache_settings=providers.CacheSettings(finalizer=_close_client),
+        cache=providers.CacheSettings(finalizer=_close_client),
     )
     github_client = providers.Factory(
         scope=Scope.APP,
         creator=_build_github_client,
         bound_type=None,
-        cache_settings=providers.CacheSettings(finalizer=_close_client),
+        cache=providers.CacheSettings(finalizer=_close_client),
     )
     current_provider = providers.Factory(
         scope=Scope.APP,
