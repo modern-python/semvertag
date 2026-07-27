@@ -22,7 +22,7 @@ dependencies = [
     "rich",
     "semver",
     "pydantic-settings",
-    "modern-di-typer",
+    "modern-di-typer>=3,<4",
     "httpx2",
     "httpware[pydantic]>=0.15.0",
 ]
