@@ -67,7 +67,7 @@ def _collect_overrides(  # noqa: PLR0913
 
 
 @MAIN_APP.callback()
-def _main_callback(  # noqa: PLR0913
+def _main_callback(  # noqa: PLR0913, PLR0917
     ctx: typer.Context,
     project_id: typing.Annotated[
         int | None,
