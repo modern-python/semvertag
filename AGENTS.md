@@ -108,7 +108,7 @@ Two distinct tag conventions coexist — confusing them is easy:
 - **Release tags: bare semver, no `v` prefix** (`0.3.1`, `0.4.0`). `just publish`
   runs `uv version $GITHUB_REF_NAME` expecting bare semver; the branch-prefix
   strategy emits bare-semver tags by default; release URLs are
-  `releases/tag/0.4.0`. When touching the CLI / `Justfile` / publish flow, think
+  `releases/tag/0.4.0`. When touching the CLI / `justfile` / publish flow, think
   bare semver — `$GITHUB_REF_NAME` is `0.4.0`, not `v0.4.0`.
 - **Action floating tag: `v`-prefixed** (`v0`). The `Float major tag` step in
   [`.github/workflows/release.yml`](.github/workflows/release.yml) prepends `v`
