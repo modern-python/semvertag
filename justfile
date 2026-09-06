@@ -15,7 +15,6 @@ lint-ci:
     uv run ruff format --check
     uv run ruff check --no-fix
     uv run ty check
-    uv run python planning/index.py --check
 
 test *args:
     uv run --no-sync pytest {{ args }}
@@ -30,11 +29,3 @@ publish:
 # Strict local docs build (no deploy). Mirrors CI's link/strict checks.
 docs-build:
     uvx --with-requirements docs/requirements.txt mkdocs build --strict
-
-# Print the planning change index (flat, newest-first) to stdout.
-index:
-    uv run python planning/index.py
-
-# Validate planning changes + decisions; CI runs this.
-check-planning:
-    uv run python planning/index.py --check
