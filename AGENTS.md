@@ -19,14 +19,7 @@ it: a GitHub Actions composite (`action.yml`) and a GitLab CI Catalog component
 ## Architecture
 
 A human at a shell, the GitHub Action, and the GitLab CI component all invoke the same
-`semvertag tag`, and `semvertag/` is short enough to read. What reading it will not tell you is why
-four of its shapes are load-bearing rather than incidental: the two forge adapters are independent
-copies sharing only the RFC 8288 pagination loop
-([ADR-0001](docs/adr/0001-forge-providers-not-unified.md)) and their status-to-error ladders stay
-duplicated for the same reason ([ADR-0003](docs/adr/0003-error-translators-not-tabled.md)); there is
-one verb and no `doctor` preflight ([ADR-0006](docs/adr/0006-no-doctor-preflight-command.md)); and
-the composite action deliberately does not check the repository out
-([ADR-0007](docs/adr/0007-composite-action-does-not-check-out.md)).
+`semvertag tag`, and `semvertag/` is short enough to read.
 
 ## Cutting a release (maintainers)
 
