@@ -80,7 +80,7 @@ jobs:
 semvertag auto-detects GitHub Actions, picks the bump from the latest
 commit, and creates the tag ref via the GitHub API. `fetch-depth: 0`
 matters — the default `1` misses tag-relative history. See
-[GitHub Actions docs](docs/providers/github.md) for token scopes,
+[GitHub Actions docs](https://github.com/modern-python/semvertag/blob/main/docs/providers/github.md) for token scopes,
 GitHub Enterprise setup, outputs, and troubleshooting.
 
 ## Strategies
@@ -103,7 +103,7 @@ semvertag stands on other `modern-python` libraries:
 - **[modern-di-typer](https://github.com/modern-python/modern-di-typer)** —
   dependency-injection wiring for the Typer CLI. semvertag resolves its
   settings, API providers, and bump strategies through a `modern_di` container
-  ([`semvertag/ioc.py`](semvertag/ioc.py)).
+  ([`semvertag/ioc.py`](https://github.com/modern-python/semvertag/blob/main/semvertag/ioc.py)).
 - **[httpware](https://github.com/modern-python/httpware)** — the resilient
   HTTP client both providers use for the GitLab/GitHub REST calls (retries,
   timeouts, typed decoding, secret redaction).
@@ -112,7 +112,7 @@ semvertag stands on other `modern-python` libraries:
 
 ## 📦 [PyPI](https://pypi.org/project/semvertag)
 
-## 📝 [License](LICENSE)
+## 📝 [License](https://github.com/modern-python/semvertag/blob/main/LICENSE)
 
 ## Part of `modern-python`
 
