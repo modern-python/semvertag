@@ -110,7 +110,8 @@ def validate(path: str) -> None:
 
 def main(argv: list[str]) -> None:
     if len(argv) != _EXPECTED_ARGV_LEN:
-        raise DescriptorGateError(f"usage: python -m tests._descriptor_gate <path>; got {argv!r}")
+        msg = f"usage: python -m tests._descriptor_gate <path>; got {argv!r}"
+        raise DescriptorGateError(msg)
     validate(argv[1])
     sys.stdout.write(f"{argv[1]} shape OK\n")
 

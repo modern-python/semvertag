@@ -63,21 +63,19 @@ lint = [
 fix = true
 unsafe-fixes = true
 line-length = 120
-target-version = "py310"
 
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "D1",
-    "FBT",
-    "TRY003",
-    "EM102",
-    "D203",
-    "D213",
-    "COM812",
-    "ISC001",
-    "S105",
+    "D1",     # docstrings are not forced; a docstring exists when it says something
+    "D203",   # conflicts with D211
+    "D213",   # conflicts with D212
+    "COM812", # conflicts with the formatter
+    "ISC001", # conflicts with the formatter
     "CPY001", # no per-file copyright header
+    "FBT",    # boolean positional arguments are fine
+    "TCH",    # imports stay real; TYPE_CHECKING-only imports break runtime introspection
+    "S105",   # token names in env-var constants and test fixtures, not secrets
 ]
 isort.lines-after-imports = 2
 isort.no-lines-before = ["standard-library", "local-folder"]
