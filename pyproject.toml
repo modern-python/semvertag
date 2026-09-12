@@ -84,7 +84,7 @@ isort.no-lines-before = ["standard-library", "local-folder"]
 "tests/**/*.py" = ["S101", "SLF001"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=semvertag --cov=tests._descriptor_gate --cov-branch --cov-report term-missing"
+addopts = ""
 testpaths = ["tests"]
 
 [tool.coverage.report]
