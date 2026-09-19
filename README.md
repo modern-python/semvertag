@@ -71,15 +71,12 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: modern-python/semvertag@v0
 ```
 
 semvertag auto-detects GitHub Actions, picks the bump from the latest
-commit, and creates the tag ref via the GitHub API. `fetch-depth: 0`
-matters — the default `1` misses tag-relative history. See
+commit, and creates the tag ref via the GitHub API. It never reads the
+working tree, so the job needs no `actions/checkout` step at all. See
 [GitHub Actions docs](https://github.com/modern-python/semvertag/blob/main/docs/providers/github.md) for token scopes,
 GitHub Enterprise setup, outputs, and troubleshooting.
 
