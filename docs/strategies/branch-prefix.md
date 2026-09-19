@@ -63,7 +63,7 @@ naming convention.
 If your team commits Conventional Commits messages directly to the
 default branch (without merge commits), switch to
 [Conventional Commits](conventional-commits.md) — that strategy
-scans every commit since the last tag and does not depend on merge
+reads the head commit's subject and does not depend on merge
 metadata.
 
 ## Consumer integration

@@ -1,11 +1,10 @@
 # Conventional Commits strategy
 
-The `conventional-commits` strategy parses each commit's subject line
-against the
+The `conventional-commits` strategy parses the subject line of the
+head commit on the default branch against the
 [Conventional Commits](https://www.conventionalcommits.org/) grammar
-and decides a per-commit bump. The orchestrator combines per-commit
-bumps across the commit range and applies the highest one to the
-release.
+and decides the bump from that one commit. It does not scan the
+commits since the latest tag; see [Head commit only](#head-commit-only).
 
 ## Default type-to-bump mapping
 
@@ -37,18 +36,22 @@ Both lists are validated against the lowercase-letters-only regex
 `^[a-z]+$`. Major bumps come from `BREAKING CHANGE:` / `!` markers
 only and are not configurable.
 
-## Commit scanning
+## Head commit only
 
-The strategy decides a bump per-commit; the orchestrator scans the
-commit range and takes the highest bump across all commits. One
-`feat!:` (or `BREAKING CHANGE:` body) anywhere in the range promotes
-the release to major even if every other commit is a patch.
+semvertag runs once per push to the default branch and fetches exactly
+one commit, the head. The strategy reads that commit's subject and
+body; nothing else on the branch is considered, so a `feat:` two
+commits back does not promote a `chore:` head to a minor bump. This
+matches a squash-merge workflow, where one push is one commit whose
+subject is the pull request title. With a merge-commit workflow the
+head is the merge commit, and a default `Merge pull request #12 from
+...` subject does not match the grammar, so the run reports
+`no_conforming_commit`; use [Branch prefix](branch-prefix.md) there,
+since it reads the merge commit's source branch instead.
 
-Merge commits are scanned the same as any other commit — their
-subject is matched against the type grammar. If your merge commits do
-not follow Conventional Commits format (e.g. default `Merge branch
-'foo' into main` subjects), they contribute `none` and the bump is
-decided by the merged commits' types.
+Because nothing looks back, a run that fails after a bump-worthy push
+must be re-run: the next push is judged on its own head, and the
+earlier bump is not recovered.
 
 ## When to pick a different strategy
 

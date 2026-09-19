@@ -59,7 +59,7 @@ Pass `--strategy` (or set `SEMVERTAG_STRATEGY`) to one of:
 | Value | Description |
 |---|---|
 | `branch-prefix` (default) | Bump from the source-branch prefix of the latest merge commit. |
-| `conventional-commits` | Bump from Conventional Commits headers since the last tag. |
+| `conventional-commits` | Bump from the head commit's Conventional Commits header. |
 
 ```yaml
       - uses: modern-python/semvertag@v0
@@ -199,10 +199,11 @@ prefix-to-bump table and edge-case behavior.
 Pick `conventional-commits` if your team writes
 [Conventional Commits](https://www.conventionalcommits.org/) messages
 directly on the default branch (e.g. `feat: add X`, `fix: handle Y`,
-`feat!: drop Z`). semvertag scans commits since the last tag and
-chooses the highest bump implied by their type prefixes (`feat!` or
+`feat!: drop Z`), typically with squash merges so that each push is
+one commit. semvertag reads the head commit's type prefix (`feat!` or
 `BREAKING CHANGE:` → major, `feat:` → minor, `fix:` → patch,
-everything else → none). See
+everything else → none); it does not scan the commits since the
+latest tag. See
 [Conventional Commits strategy](../strategies/conventional-commits.md)
 for the full type-to-bump mapping.
 
