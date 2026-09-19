@@ -18,7 +18,7 @@ Single-context repo:
 ├── CONTEXT.md
 ├── docs/adr/
 │   ├── 0001-forge-providers-not-unified.md
-│   └── 0002-blank-settings-values-normalize-to-unset.md
+│   └── 0002-outcome-renderings-stay-split.md
 └── semvertag/
 ```
 
