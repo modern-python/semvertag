@@ -32,9 +32,6 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: modern-python/semvertag@v0
 ```
 
@@ -49,10 +46,11 @@ without pushing.
 > `--provider github` is only needed when running outside GHA (e.g.
 > on a developer laptop targeting a github.com repo).
 
-> **`fetch-depth: 0`** matters: semvertag walks commit history to
-> determine the bump. `actions/checkout@v4`'s default
-> `fetch-depth: 1` only fetches the single tip commit and will miss
-> tag-relative history.
+> **No checkout needed.** semvertag reads the head commit and the tag
+> history over the GitHub API and never touches the working tree, so
+> the job needs neither an `actions/checkout` step nor a `fetch-depth`
+> setting. Add a checkout only if other steps in the same job need the
+> repository files.
 
 ## Strategy
 
@@ -113,9 +111,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - id: semvertag
         uses: modern-python/semvertag@v0
       - if: steps.semvertag.outputs.status == 'created'
@@ -223,9 +218,6 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"

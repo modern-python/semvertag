@@ -26,8 +26,6 @@ jobs:
     # that bypassed dry-run would be denied by the API.
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - id: semvertag
         uses: ./
         with:
