@@ -44,10 +44,11 @@ body; nothing else on the branch is considered, so a `feat:` two
 commits back does not promote a `chore:` head to a minor bump. This
 matches a squash-merge workflow, where one push is one commit whose
 subject is the pull request title. With a merge-commit workflow the
-head is the merge commit, and a default `Merge pull request #12 from
-...` subject does not match the grammar, so the run reports
-`no_conforming_commit`; use [Branch prefix](branch-prefix.md) there,
-since it reads the merge commit's source branch instead.
+head is the merge commit, and a default `Merge branch 'foo' into
+main` subject does not match the grammar, so the strategy declines
+with `no_conforming_commit`; use [Branch prefix](branch-prefix.md)
+there, since it reads the merge commit's source branch instead,
+keeping in mind that it produces no major bumps.
 
 Because nothing looks back, a run that fails after a bump-worthy push
 must be re-run: the next push is judged on its own head, and the

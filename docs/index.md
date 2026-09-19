@@ -10,7 +10,7 @@
 Auto-tag your GitLab repository with semantic version tags from CI —
 one tool, two strategies.
 
-semvertag reads the latest commit and tag history from your GitLab
+semvertag reads the head commit and tag history from your GitLab
 project via the API, decides the appropriate semver bump based on the
 strategy you've configured, and creates the new git tag — all from a
 single command in your CI pipeline.
@@ -52,7 +52,7 @@ semvertag ships with two bump-decision strategies:
   source branch of the latest merge commit (`feature/` → minor,
   `bugfix/` / `hotfix/` → patch). The default.
 - [**conventional-commits**](strategies/conventional-commits.md) —
-  bump based on the latest commit's Conventional Commits header
+  bump based on the head commit's Conventional Commits message
   (`feat:` → minor, `fix:` / `perf:` → patch, `!` or
   `BREAKING CHANGE:` → major).
 

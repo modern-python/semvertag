@@ -13,6 +13,13 @@ A term is listed only when there is a synonym to reject, or a meaning subtle eno
 docs must agree on it. General semver and CI vocabulary — tag, version, release, major/minor/patch —
 does not belong here, however heavily this project uses it.
 
+**Head commit**:
+The single commit a run judges: the tip of the default branch at the moment the run starts, fetched
+by `get_latest_commit_on_default_branch` and passed whole to `BumpStrategy.decide`. Nothing between
+the latest tag and the head is read.
+_Avoid_: latest commit. "Latest" is already pinned by *latest tag* to mean highest by precedence,
+not newest by date, and the head is newest by position.
+
 **Forge**:
 A repository-hosting service semvertag talks to over REST — GitLab or GitHub today.
 _Avoid_: host. `host` is already spoken for by the same-origin pagination guard, whose two

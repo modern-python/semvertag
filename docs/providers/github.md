@@ -35,7 +35,7 @@ jobs:
       - uses: modern-python/semvertag@v0
 ```
 
-The job runs against the latest commit on the default branch and, if
+The job runs against the head commit on the default branch and, if
 a bump is warranted by the configured strategy, creates a new tag
 ref via the GitHub API. If no bump is warranted, the job exits 0
 without pushing.
@@ -58,8 +58,8 @@ Pass `--strategy` (or set `SEMVERTAG_STRATEGY`) to one of:
 
 | Value | Description |
 |---|---|
-| `branch-prefix` (default) | Bump from the source-branch prefix of the latest merge commit. |
-| `conventional-commits` | Bump from the head commit's Conventional Commits header. |
+| `branch-prefix` (default) | Bump from the source-branch prefix of the head commit, which must be a merge commit. |
+| `conventional-commits` | Bump from the head commit's Conventional Commits message. |
 
 ```yaml
       - uses: modern-python/semvertag@v0
@@ -189,10 +189,12 @@ is the entire setup.
 ## Branch-prefix vs conventional-commits
 
 Pick `branch-prefix` if your team merges PRs with branch names that
-follow a `fix/...`, `feat/...`, `chore/...` convention. semvertag
-reads the most recent merge commit's source-branch prefix and bumps
-accordingly — `fix/` bumps patch, `feat/` bumps minor, `chore/`
-bumps nothing. This is the default. See
+follow a `fix/...`, `feat/...`, `chore/...` convention and lands them
+as merge commits. semvertag reads the head commit's source-branch
+prefix and bumps accordingly — `fix/` bumps patch, `feat/` bumps
+minor, `chore/` bumps nothing. With squash merges the head is not a
+merge commit and the run reports `no_merge_commit`. This is the
+default. See
 [Branch-prefix strategy](../strategies/branch-prefix.md) for the full
 prefix-to-bump table and edge-case behavior.
 
@@ -200,8 +202,9 @@ Pick `conventional-commits` if your team writes
 [Conventional Commits](https://www.conventionalcommits.org/) messages
 directly on the default branch (e.g. `feat: add X`, `fix: handle Y`,
 `feat!: drop Z`), typically with squash merges so that each push is
-one commit. semvertag reads the head commit's type prefix (`feat!` or
-`BREAKING CHANGE:` → major, `feat:` → minor, `fix:` → patch,
+one commit. semvertag reads the head commit's type prefix and body
+(`feat!` or a `BREAKING CHANGE:` footer → major, `feat:` → minor,
+`fix:` → patch,
 everything else → none); it does not scan the commits since the
 latest tag. See
 [Conventional Commits strategy](../strategies/conventional-commits.md)
@@ -266,3 +269,8 @@ envelope yourself.
   `SEMVERTAG_GITHUB__ENDPOINT` (note the double underscore) as a
   workflow-level env pointing to the instance's API root, e.g.
   `https://github.example.com/api/v3`.
+
+- **A bump-worthy push was never tagged** — the run for that push
+  failed or was skipped. Re-run it. Each run judges only the head
+  commit of its own push and does not look back, so the next push
+  cannot recover an earlier bump.
