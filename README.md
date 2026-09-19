@@ -47,7 +47,7 @@ semvertag:
 ```
 
 It runs `uvx semvertag tag` against your repo on the default branch.
-semvertag inspects the latest commit + tag history, decides the
+semvertag inspects the head commit + tag history, decides the
 appropriate semver bump, and creates the new tag via the GitLab API.
 
 > A one-line `include: - component: …` via the GitLab CI Catalog will
@@ -82,10 +82,10 @@ GitHub Enterprise setup, outputs, and troubleshooting.
 
 ## Strategies
 
-- **branch-prefix** (default): the latest commit on the default branch
+- **branch-prefix** (default): the head commit on the default branch
   must be a merge commit whose source branch starts with `feature/`
   (minor), `bugfix/`, or `hotfix/` (patch).
-- **conventional-commits**: parses the latest commit's
+- **conventional-commits**: parses the head commit's
   [Conventional Commits](https://www.conventionalcommits.org/)
   header (`feat:` minor, `fix:`/`perf:` patch, `!` or `BREAKING
   CHANGE:` major).

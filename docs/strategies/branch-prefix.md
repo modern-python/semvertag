@@ -58,13 +58,20 @@ These are set via the same pydantic-settings env-var mechanism used
 for tokens / endpoints — see the provider docs for the variable
 naming convention.
 
+## Head commit only
+
+Like every strategy, `branch-prefix` sees only the head commit of the
+push that triggered the run. A run that fails after a bump-worthy
+merge must be re-run: the next push is judged on its own head, and
+the earlier bump is not recovered.
+
 ## When to pick a different strategy
 
 If your team commits Conventional Commits messages directly to the
 default branch (without merge commits), switch to
 [Conventional Commits](conventional-commits.md) — that strategy
-scans every commit since the last tag and does not depend on merge
-metadata.
+reads the head commit's subject and body and does not depend on
+merge metadata.
 
 ## Consumer integration
 
