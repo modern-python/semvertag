@@ -19,12 +19,12 @@ classifiers = [
 ]
 version = "0"
 dependencies = [
-    "typer",
-    "rich",
-    "semver",
-    "pydantic-settings",
+    "typer>=0.13",
+    "rich>=10.2",
+    "semver>=3",
+    "pydantic-settings>=2",
     "modern-di-typer>=3,<4",
-    "httpx2",
+    "httpx2>=2",
     "httpware[pydantic]>=0.15.0",
 ]
 
