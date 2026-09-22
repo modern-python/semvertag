@@ -47,12 +47,13 @@ module-name = "semvertag"
 module-root = ""
 
 [dependency-groups]
+# Floored so `uv sync --resolution lowest-direct` resolves a usable harness, not each name's first release.
 dev = [
-    "pytest",
-    "pytest-cov",
-    "pytest-xdist",
-    "pytest-randomly",
-    "pyyaml",
+    "pytest>=8",
+    "pytest-cov>=5",
+    "pytest-xdist>=3",
+    "pytest-randomly>=3",
+    "pyyaml>=6.0.3",
 ]
 lint = [
     "ruff",
