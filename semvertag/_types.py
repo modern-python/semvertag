@@ -37,10 +37,3 @@ class Commit:
 class Tag:
     name: str
     commit_sha: str
-
-
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-class CheckResult:
-    name: str
-    status: typing.Literal["passed", "failed", "skipped"]
-    cause: str

@@ -1,12 +1,6 @@
-"""Structural validator for templates/semvertag.yml.
-
-Shared between the `.github/workflows/ci.yml` lint step and the
-regression test fixtures in test_ci_descriptor_gate.py so the gate
-and its tests cannot drift.
-"""
+"""Structural validator for templates/semvertag.yml, run by test_ci_descriptor_gate.py."""
 
 import pathlib
-import sys
 import typing
 
 import yaml
@@ -17,7 +11,6 @@ _VERSION_MARKER: typing.Final = "@v"
 _SUBSTITUTION_LITERAL: typing.Final = "$[[ inputs.strategy ]]"
 _EXPECTED_OPTIONS: typing.Final = {"branch-prefix", "conventional-commits"}
 _EXPECTED_DOC_COUNT: typing.Final = 2
-_EXPECTED_ARGV_LEN: typing.Final = 2
 
 
 class DescriptorGateError(SystemExit):
@@ -106,15 +99,3 @@ def validate(path: str) -> None:
         ">=" in first or "==" in first or _VERSION_MARKER in first,
         f"job.script[0] must pin the semvertag version (contain '>=', '==', or '{_VERSION_MARKER}'), got {first!r}",
     )
-
-
-def main(argv: list[str]) -> None:
-    if len(argv) != _EXPECTED_ARGV_LEN:
-        msg = f"usage: python -m tests._descriptor_gate <path>; got {argv!r}"
-        raise DescriptorGateError(msg)
-    validate(argv[1])
-    sys.stdout.write(f"{argv[1]} shape OK\n")
-
-
-if __name__ == "__main__":
-    main(sys.argv)
