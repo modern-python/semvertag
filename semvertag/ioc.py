@@ -70,7 +70,7 @@ def _build_current_provider(
                 http=gitlab_client,
                 default_branch=settings.default_branch,
             )
-        case _:  # pragma: no cover
+        case _:  # pragma: no cover - exhaustiveness guard; ty verifies every ProviderTarget is matched
             typing.assert_never(settings.provider_target)
 
 

@@ -68,7 +68,7 @@ def _format_outcome(outcome: Outcome, *, strategy: str) -> str:
             return f"No tag created — latest commit is already tagged {tag}."
         case NoBump(reason=reason):
             return f"No tag created — {reason}"
-        case _:  # pragma: no cover
+        case _:  # pragma: no cover - exhaustiveness guard; ty verifies every Outcome is matched
             typing.assert_never(outcome)
 
 
