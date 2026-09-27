@@ -91,5 +91,5 @@ def to_run_result(outcome: Outcome, *, strategy: str) -> RunResult:
             return RunResult(
                 strategy=strategy, bump=Bump.NONE.value, status=status, tag=None, commit=commit, reason=reason
             )
-        case _:  # pragma: no cover
+        case _:  # pragma: no cover - exhaustiveness guard; ty verifies every Outcome is matched
             typing.assert_never(outcome)

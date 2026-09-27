@@ -1,5 +1,6 @@
 import collections.abc
 import importlib.metadata
+import runpy
 import sys
 import typing
 import unittest.mock
@@ -166,4 +167,12 @@ def test_main_entry_point_runs_typer_app_inside_ioc_container(
     monkeypatch.setattr(sys, "argv", ["semvertag", "--version"])
     with pytest.raises(SystemExit) as exc_info:
         cli_main.main()
+    assert exc_info.value.code == 0
+
+
+def test_python_dash_m_semvertag_runs_the_cli(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "argv", ["semvertag", "--version"])
+    monkeypatch.delitem(sys.modules, "semvertag.__main__")
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_module("semvertag", run_name="__main__")
     assert exc_info.value.code == 0

@@ -5,7 +5,7 @@ import pytest
 import semver
 
 from semvertag._outcome import AlreadyTagged, Created, DryRun, NoBump, NoTags, Outcome
-from semvertag._types import Bump, CheckResult, Commit, Tag
+from semvertag._types import Bump, Commit, Tag
 from semvertag._use_case import SemvertagUseCase, _compute_new_version, _select_latest_semver_tag
 
 
@@ -61,18 +61,6 @@ class _StubProvider:
 
     def create_tag(self, name: str, commit_sha: str) -> None:
         self.create_tag_calls.append((name, commit_sha))
-
-    def check_token(self) -> CheckResult:  # pragma: no cover
-        return CheckResult(name="token", status="passed", cause="stub")
-
-    def check_scopes(self) -> CheckResult:  # pragma: no cover
-        return CheckResult(name="scopes", status="passed", cause="stub")
-
-    def check_project_access(self) -> CheckResult:  # pragma: no cover
-        return CheckResult(name="project_access", status="passed", cause="stub")
-
-    def check_protected_tags(self) -> CheckResult:  # pragma: no cover
-        return CheckResult(name="protected_tags", status="passed", cause="stub")
 
 
 @dataclasses.dataclass(slots=True, kw_only=True)

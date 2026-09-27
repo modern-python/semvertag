@@ -116,5 +116,5 @@ def main(argv: list[str]) -> None:
     sys.stdout.write(f"{argv[1]} shape OK\n")
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     main(sys.argv)
