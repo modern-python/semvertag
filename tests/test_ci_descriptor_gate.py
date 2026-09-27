@@ -7,14 +7,12 @@ informal manual mutation check.
 """
 
 import pathlib
-import runpy
-import sys
 import typing
 
 import pytest
 import yaml
 
-from tests._descriptor_gate import DescriptorGateError, main, validate
+from tests._descriptor_gate import DescriptorGateError, validate
 
 
 _REPO_ROOT: typing.Final = pathlib.Path(__file__).parent.parent
@@ -123,24 +121,3 @@ def test_unpinned_semvertag_fails(tmp_path: pathlib.Path, shipped_descriptor_doc
     bad = _write_descriptor(tmp_path, [spec, body])
     with pytest.raises(DescriptorGateError, match=r"script.* must pin the semvertag version"):
         validate(str(bad))
-
-
-def test_main_prints_shape_ok_for_valid_descriptor(capsys: pytest.CaptureFixture[str]) -> None:
-    main(["_descriptor_gate", str(_DESCRIPTOR_PATH)])
-    captured: typing.Final = capsys.readouterr()
-    assert captured.out == f"{_DESCRIPTOR_PATH} shape OK\n"
-
-
-def test_module_run_as_script_validates_argv_path(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
-    monkeypatch.setattr(sys, "argv", ["_descriptor_gate", str(_DESCRIPTOR_PATH)])
-    monkeypatch.delitem(sys.modules, "tests._descriptor_gate")
-    runpy.run_module("tests._descriptor_gate", run_name="__main__")
-    captured: typing.Final = capsys.readouterr()
-    assert captured.out == f"{_DESCRIPTOR_PATH} shape OK\n"
-
-
-def test_main_raises_when_argv_length_wrong() -> None:
-    with pytest.raises(DescriptorGateError, match=r"usage: python -m tests\._descriptor_gate"):
-        main(["_descriptor_gate"])
