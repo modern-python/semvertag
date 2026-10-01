@@ -105,20 +105,15 @@ def gitlab_transport() -> httpx2.MockTransport:
 
 
 @pytest.fixture
-def gitlab_client(gitlab_transport: httpx2.MockTransport) -> collections.abc.Iterator[httpx2.Client]:
+def gitlab_http(gitlab_transport: httpx2.MockTransport) -> collections.abc.Iterator[httpware.Client]:
     config: typing.Final = GitLabConfig(endpoint=GITLAB_ENDPOINT, token=pydantic.SecretStr(GITLAB_TOKEN))
-    with httpx2.Client(
+    with httpware.Client(
         transport=gitlab_transport,
         base_url=GITLAB_ENDPOINT,
         timeout=_REQUEST_TIMEOUT,
         headers={_TOKEN_HEADER: config.token.get_secret_value()},
     ) as client:
         yield client
-
-
-@pytest.fixture
-def gitlab_http(gitlab_client: httpx2.Client) -> httpware.Client:
-    return httpware.Client(httpx2_client=gitlab_client)
 
 
 @pytest.fixture

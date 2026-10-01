@@ -7,7 +7,7 @@ Integration tests inject `httpx2.MockTransport` into the production `httpware.Cl
 Two seams exist, depending on the test entry point:
 
 - **CLI-level tests** (`test_cli_*.py`) drive `semvertag.__main__` through Typer's `CliRunner` and let the DI container build the production stack. They override `ioc.ProvidersGroup.gitlab_client` with a mock-backed `httpware.Client` via the `install_mock_transport` fixture in `conftest.py`.
-- **Provider-level tests** (`test_gitlab_provider.py`) bypass the container and call the `_make_provider(handler)` helper, which constructs an `httpware.Client(httpx2_client=httpx2.Client(transport=httpx2.MockTransport(handler), base_url=...))` directly.
+- **Provider-level tests** (`test_gitlab_provider.py`) bypass the container and call the `_make_provider(handler)` helper, which constructs an `httpware.Client(transport=httpx2.MockTransport(handler), base_url=...)` directly.
 
 ## Disabling retry sleeps
 
