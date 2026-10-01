@@ -60,11 +60,10 @@ def _make_provider(
     handler: HandlerCallable,
     *,
     default_branch: str | None = None,
-) -> tuple[GitHubProvider, httpx2.Client]:
-    transport = httpx2.MockTransport(handler)
+) -> tuple[GitHubProvider, httpware.Client]:
     config = GitHubConfig(endpoint=GITHUB_ENDPOINT, token=pydantic.SecretStr(GITHUB_TOKEN))
-    inner = httpx2.Client(
-        transport=transport,
+    client = httpware.Client(
+        transport=httpx2.MockTransport(handler),
         base_url=GITHUB_ENDPOINT,
         headers={
             "Authorization": f"Bearer {config.token.get_secret_value()}",
@@ -72,11 +71,8 @@ def _make_provider(
             "X-GitHub-Api-Version": "2022-11-28",
         },
     )
-    client = httpware.Client(httpx2_client=inner)
     provider = GitHubProvider(config=config, repo=GITHUB_REPO, http=client, default_branch=default_branch)
-    # Return the inner httpx2.Client so tests can use it as a context manager
-    # for teardown; httpware.Client doesn't own its lifecycle when constructed via httpx2_client=.
-    return provider, inner
+    return provider, client
 
 
 # Protocol conformance

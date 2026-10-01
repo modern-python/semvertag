@@ -55,12 +55,7 @@ def cli_env(monkeypatch: pytest.MonkeyPatch) -> None:
 def install_mock_transport() -> typing.Iterator[collections.abc.Callable[[HandlerCallable], None]]:
     def install(handler: HandlerCallable) -> None:
         mock_transport: typing.Final = httpx2.MockTransport(handler)
-        mock_client: typing.Final = httpware.Client(
-            httpx2_client=httpx2.Client(
-                transport=mock_transport,
-                base_url=GITLAB_ENDPOINT,
-            )
-        )
+        mock_client: typing.Final = httpware.Client(transport=mock_transport, base_url=GITLAB_ENDPOINT)
         ioc.container.override(ioc.ProvidersGroup.gitlab_client, mock_client)
 
     with ioc.container:

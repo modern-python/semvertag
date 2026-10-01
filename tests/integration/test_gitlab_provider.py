@@ -44,21 +44,17 @@ def _make_provider(
     handler: HandlerCallable,
     *,
     default_branch: str | None = None,
-) -> tuple[GitLabProvider, httpx2.Client]:
-    transport: typing.Final = httpx2.MockTransport(handler)
+) -> tuple[GitLabProvider, httpware.Client]:
     config: typing.Final = GitLabConfig(endpoint=GITLAB_ENDPOINT, token=pydantic.SecretStr(GITLAB_TOKEN))
-    inner_client: typing.Final = httpx2.Client(
-        transport=transport,
+    http: typing.Final = httpware.Client(
+        transport=httpx2.MockTransport(handler),
         base_url=GITLAB_ENDPOINT,
         headers={_TOKEN_HEADER: config.token.get_secret_value()},
     )
-    http: typing.Final = httpware.Client(httpx2_client=inner_client)
     provider: typing.Final = GitLabProvider(
         config=config, project_id=GITLAB_PROJECT_ID, http=http, default_branch=default_branch
     )
-    # Return the inner httpx2.Client so tests can use it as a context manager
-    # for teardown; httpware.Client doesn't own its lifecycle when constructed via httpx2_client=.
-    return provider, inner_client
+    return provider, http
 
 
 # Protocol conformance
