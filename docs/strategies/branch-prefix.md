@@ -1,7 +1,7 @@
 # Branch-prefix strategy
 
-The `branch-prefix` strategy inspects the subject line of each commit
-and picks a bump if the subject (a) looks like a merge commit and
+The `branch-prefix` strategy inspects the subject line of the head
+commit on the default branch and picks a bump if the subject (a) looks like a merge commit and
 (b) contains a configured branch-name prefix. It is the default
 strategy because it works out-of-the-box on repos that merge via
 short-lived prefixed branches and use the default `git merge`
