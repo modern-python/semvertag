@@ -68,6 +68,22 @@ block on the `include:`. The values and default match
 [`templates/semvertag.yml`](https://github.com/modern-python/semvertag/blob/main/templates/semvertag.yml)'s
 `spec.inputs.strategy` so the migration is a snippet swap.
 
+## Dry run
+
+Pass `--dry-run` to compute the bump and report the planned tag
+without pushing it. It needs semvertag 0.5.0 or later, so raise the
+floor in the job:
+
+```yaml
+semvertag:
+  # ...
+  script:
+    - uvx 'semvertag>=0.5.0,<1' tag --dry-run
+```
+
+The Catalog component exposes this as a boolean `dry-run` input,
+`false` by default.
+
 
 ## Required permissions
 

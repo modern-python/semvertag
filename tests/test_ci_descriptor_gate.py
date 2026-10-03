@@ -114,6 +114,51 @@ def test_unpinned_uv_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list
         validate(str(bad))
 
 
+def test_missing_dry_run_input_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list[typing.Any]) -> None:
+    """Negative: drop spec.inputs.dry-run → gate raises (GitLab/GitHub wrapper parity)."""
+    spec, body = shipped_descriptor_docs
+    del spec["spec"]["inputs"]["dry-run"]
+    bad = _write_descriptor(tmp_path, [spec, body])
+    with pytest.raises(DescriptorGateError, match=r"expected inputs=\{dry-run, strategy\}"):
+        validate(str(bad))
+
+
+def test_string_typed_dry_run_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list[typing.Any]) -> None:
+    """Negative: GitHub-style string dry-run input → gate raises (the script relies on a bare true/false)."""
+    spec, body = shipped_descriptor_docs
+    spec["spec"]["inputs"]["dry-run"]["type"] = "string"
+    bad = _write_descriptor(tmp_path, [spec, body])
+    with pytest.raises(DescriptorGateError, match=r"dry-run\.type must be 'boolean'"):
+        validate(str(bad))
+
+
+def test_dry_run_on_by_default_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list[typing.Any]) -> None:
+    """Negative: dry-run defaulting to true would silently stop every consumer from tagging."""
+    spec, body = shipped_descriptor_docs
+    spec["spec"]["inputs"]["dry-run"]["default"] = True
+    bad = _write_descriptor(tmp_path, [spec, body])
+    with pytest.raises(DescriptorGateError, match=r"dry-run\.default must be False"):
+        validate(str(bad))
+
+
+def test_unwired_dry_run_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list[typing.Any]) -> None:
+    """Negative: declare dry-run but never thread it to the CLI → gate raises."""
+    spec, body = shipped_descriptor_docs
+    body["semvertag"]["script"] = ["uvx 'semvertag>=0.5.0,<1' tag"]
+    bad = _write_descriptor(tmp_path, [spec, body])
+    with pytest.raises(DescriptorGateError, match=r"must map inputs\.dry-run onto --dry-run"):
+        validate(str(bad))
+
+
+def test_pre_dry_run_semvertag_floor_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list[typing.Any]) -> None:
+    """Negative: a semvertag floor below 0.5.0 could resolve a CLI without --dry-run."""
+    spec, body = shipped_descriptor_docs
+    body["semvertag"]["script"] = [body["semvertag"]["script"][0].replace(">=0.5.0", ">=0.1")]
+    bad = _write_descriptor(tmp_path, [spec, body])
+    with pytest.raises(DescriptorGateError, match=r"semvertag floor must be >= 0\.5\.0"):
+        validate(str(bad))
+
+
 def test_unpinned_semvertag_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list[typing.Any]) -> None:
     """Negative: drop the semvertag version specifier → gate raises (D1 pinning regression-proof)."""
     spec, body = shipped_descriptor_docs
