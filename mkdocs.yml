@@ -4,7 +4,7 @@ repo_url: https://github.com/modern-python/semvertag
 docs_dir: docs
 edit_uri: edit/main/docs/
 nav:
-  - Quick Start: index.md
+  - Quick start: index.md
   - Providers:
     - GitLab CI: providers/gitlab.md
     - GitHub Actions: providers/github.md

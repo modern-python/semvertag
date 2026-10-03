@@ -6,14 +6,14 @@ Use semvertag in GitHub Actions via the published composite action
 fallback for environments that can't consume the action lives at the
 bottom of this page.
 
-## Quick Start
+## Quick start
 
-The minimum useful workflow: auto-tag on every push to the default
+The minimum useful workflow auto-tags on every push to the default
 branch.
 
-> **Required setup.** Either rely on the workflow-scoped
-> `GITHUB_TOKEN` (which is auto-issued per job) — in which case the
-> workflow MUST declare `permissions: contents: write` — OR provide a
+> The job needs a token with write access. Either rely on the
+> workflow-scoped `GITHUB_TOKEN`, which is auto-issued per job, and
+> declare `permissions: contents: write` in the workflow, or provide a
 > fine-grained PAT with `contents: write` (single repo) or a classic
 > PAT with `repo` / `public_repo` scope. Store the PAT as a repo
 > secret named `SEMVERTAG_TOKEN`; the alias chain picks it up ahead
@@ -40,19 +40,18 @@ a bump is warranted by the configured strategy, creates a new tag
 ref via the GitHub API. If no bump is warranted, the job exits 0
 without pushing.
 
-> **First tag.** semvertag bumps from the highest existing semver tag
+> semvertag bumps from the highest existing semver tag
 > and never creates the first one. It reads only plain semver tags such
 > as `0.1.0`; a `v` prefix (`v0.1.0`) does not parse and is ignored. Until
 > one exists, every run reports `no_tags` and exits 0. Push one with
 > `git tag 0.1.0 && git push origin 0.1.0`.
 
-> **Auto-detection.** semvertag detects GitHub Actions from the
-> `GITHUB_ACTIONS=true` env var that GHA sets automatically. The
-> `--provider` flag is therefore optional inside GHA — explicit
-> `--provider github` is only needed when running outside GHA (e.g.
-> on a developer laptop targeting a github.com repo).
+> semvertag detects GitHub Actions from the `GITHUB_ACTIONS=true` env
+> var that GHA sets automatically, so the `--provider` flag is optional
+> inside GHA. Pass `--provider github` explicitly only when running
+> outside GHA (e.g. on a developer laptop targeting a github.com repo).
 
-> **No checkout needed.** semvertag reads the head commit and the tag
+> semvertag reads the head commit and the tag
 > history over the GitHub API and never touches the working tree, so
 > the job needs neither an `actions/checkout` step nor a `fetch-depth`
 > setting. Add a checkout only if other steps in the same job need the
@@ -73,8 +72,8 @@ Pass `--strategy` (or set `SEMVERTAG_STRATEGY`) to one of:
           strategy: conventional-commits
 ```
 
-> **Strategy-specific env vars** (e.g. `SEMVERTAG_BRANCH_PREFIX__MINOR`)
-> remain configured on the calling step. The composite action only
+> Strategy-specific env vars (e.g. `SEMVERTAG_BRANCH_PREFIX__MINOR`)
+> stay configured on the calling step. The composite action only
 > explicitly sets `GITHUB_TOKEN` and `SEMVERTAG_STRATEGY`; every other
 > env var on the calling step passes through to the action's run step.
 >
@@ -86,7 +85,7 @@ Pass `--strategy` (or set `SEMVERTAG_STRATEGY`) to one of:
 
 ## Required permissions
 
-The job creates a tag ref, so the token it uses MUST carry write
+The job creates a tag ref, so the token it uses must carry write
 access to the repository's contents. semvertag reads the token from
 these env vars in order:
 `SEMVERTAG_GITHUB__TOKEN`, `SEMVERTAG_TOKEN`, `GITHUB_TOKEN`. The
@@ -100,7 +99,7 @@ When you give the step an `id:`, downstream steps can read three outputs:
 |---|---|
 | `tag` | The created tag (e.g. `1.2.3`), or empty string when `status` is `no-bump`. |
 | `bump` | `none` \| `patch` \| `minor` \| `major`. |
-| `status` | `created` (tag pushed) \| `no-bump` (nothing to tag — no prior tag, already tagged, no merge commit, or non-conforming commit). On CLI error the action itself exits non-zero and this output is not written. |
+| `status` | `created` (tag pushed) \| `no-bump` (nothing to tag: no prior tag, already tagged, no merge commit, or non-conforming commit). On CLI error the action itself exits non-zero and this output is not written. |
 
 Example: trigger a downstream release-notes job only when a tag was
 created.
@@ -127,7 +126,7 @@ jobs:
 
 ## Preview the next bump
 
-Pass `dry-run: true` to compute the bump without pushing a tag — useful in
+Pass `dry-run: true` to compute the bump without pushing a tag. Use it in
 CI smoke tests, in PR previews, or to see what the next release would be:
 
 ```yaml
@@ -158,35 +157,33 @@ Output (example):
 
 Three cases govern which token the job should use:
 
-- **Workflow-scoped `GITHUB_TOKEN`** (preferred for most projects).
+- The workflow-scoped `GITHUB_TOKEN` is preferred for most projects.
   GitHub Actions issues a fresh token per job; it inherits the
   workflow's `permissions:` block. Add `permissions: contents: write`
   at the workflow level (as in the snippet above). The token is
   auto-exported as `GITHUB_TOKEN` and picked up by the alias chain.
-- **Fine-grained PAT scoped to the single repository.** Required
-  scope: `Contents: Read and write`. Store as a repo secret named
+- A fine-grained PAT scoped to the single repository needs the
+  `Contents: Read and write` scope. Store it as a repo secret named
   `SEMVERTAG_TOKEN`; the alias chain picks it up ahead of
   `GITHUB_TOKEN`. Use this when the workflow runs across
   organizations or needs scopes the workflow token can't grant.
-- **Classic PAT.** Required scope: `repo` (private repos) or
-  `public_repo` (public repos only). Same storage shape as the
-  fine-grained PAT. Less preferred — classic PATs bleed scope
-  across all of the user's repos.
+- A classic PAT needs the `repo` (private repos) or `public_repo`
+  (public repos only) scope and is stored the same way as the
+  fine-grained PAT. It is less preferred because classic PATs bleed
+  scope across all of the user's repos.
 
-> **Masking caveat.** Because the alias chain reads
-> `SEMVERTAG_GITHUB__TOKEN` → `SEMVERTAG_TOKEN` → `GITHUB_TOKEN` in
-> order and the first set value wins, a stale `SEMVERTAG_TOKEN` left
-> over from a prior PAT-based setup will silently override the
-> workflow's `GITHUB_TOKEN`. If you migrate from PAT →
-> workflow-token, unset `SEMVERTAG_TOKEN` from the repo's secrets.
+> The alias chain reads `SEMVERTAG_GITHUB__TOKEN` → `SEMVERTAG_TOKEN`
+> → `GITHUB_TOKEN` in order and the first set value wins, so a stale
+> `SEMVERTAG_TOKEN` left over from a prior PAT-based setup will
+> silently override the workflow's `GITHUB_TOKEN`. If you migrate from
+> PAT → workflow-token, unset `SEMVERTAG_TOKEN` from the repo's secrets.
 
-**GitHub Enterprise**: set `SEMVERTAG_GITHUB__ENDPOINT` (note the
-double underscore — pydantic-settings uses `__` as the nested-key
-delimiter, so `SEMVERTAG_GITHUB_ENDPOINT` with a single underscore is
-silently ignored) as a workflow-level env or a repo secret pointing
-to the instance's API root, e.g.
-`https://github.example.com/api/v3`. The default is
-`https://api.github.com`.
+For GitHub Enterprise, set `SEMVERTAG_GITHUB__ENDPOINT` as a
+workflow-level env or a repo secret pointing to the instance's API
+root, e.g. `https://github.example.com/api/v3`. The default is
+`https://api.github.com`. Note the double underscore: pydantic-settings
+uses `__` as the nested-key delimiter, so `SEMVERTAG_GITHUB_ENDPOINT`
+with a single underscore is silently ignored.
 
 For most consumers on `github.com`-hosted repos with the
 workflow-scoped `GITHUB_TOKEN`, the minimal workflow snippet above
@@ -218,10 +215,10 @@ for the full type-to-bump mapping.
 
 ## Without the composite action
 
-If your environment can't consume the action — GitHub Enterprise
+If your environment can't consume the action (GitHub Enterprise
 instances without Marketplace access, security-constrained orgs that
 forbid third-party actions, or anyone who wants explicit control over
-the uv install step — paste the pure-CLI recipe instead:
+the uv install step), paste the pure-CLI recipe instead:
 
 ```yaml
 jobs:
@@ -239,44 +236,51 @@ jobs:
 
 The behavior matches the composite action exactly; only the install
 shape differs. Strategy is set via env (`SEMVERTAG_STRATEGY`) or CLI
-flag (`--strategy …`). No outputs are produced in this shape — read
+flag (`--strategy …`). This shape produces no outputs. Read
 the CLI stdout, or invoke `semvertag tag --json` and parse the
 envelope yourself.
 
 ## Troubleshooting
 
-- **`Token rejected: 401. Verify SEMVERTAG_TOKEN is valid.`** — the
-  token is malformed, expired, or revoked. Verify in GitHub UI
-  (Settings → Developer settings → Personal access tokens) or
-  rotate the workflow secret. When using the composite action,
-  `GITHUB_TOKEN` is set automatically from the `token` input (which
-  defaults to `${{ github.token }}`). When using the pure-CLI recipe
-  in "Without the composite action", add
-  `env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}` to the run step.
+### `Token rejected: 401. Verify SEMVERTAG_TOKEN is valid.`
 
-- **`Token missing scope or insufficient permission: 403`** — the
-  token lacks `contents: write` (fine-grained / workflow-scoped) or
-  `repo` / `public_repo` (classic). For workflow-scoped tokens,
-  add `permissions: contents: write` at the workflow level. For PATs,
-  re-issue with the right scope.
+The token is malformed, expired, or revoked. Verify it in the GitHub UI
+(Settings → Developer settings → Personal access tokens) or rotate the
+workflow secret. When using the composite action, `GITHUB_TOKEN` is set
+automatically from the `token` input (which defaults to
+`${{ github.token }}`). When using the pure-CLI recipe in "Without the
+composite action", add `env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}`
+to the run step.
 
-- **`GitHub repo not found: repo='...'`** — `GITHUB_REPOSITORY` was
-  not exported, or `--repo OWNER/REPO` was not passed. Inside GHA,
-  `GITHUB_REPOSITORY` is auto-exported in every job; outside GHA,
-  set it explicitly.
+### `Token missing scope or insufficient permission: 403`
 
-- **`Tag already exists: 'v...'`** — a previous run (or a concurrent
-  run) already created this tag. semvertag refuses to silently
-  succeed on a duplicate. Roll forward by pushing another commit
-  that changes the bump, or delete the duplicate tag.
+The token lacks `contents: write` (fine-grained / workflow-scoped) or
+`repo` / `public_repo` (classic). For workflow-scoped tokens, add
+`permissions: contents: write` at the workflow level. For PATs,
+re-issue with the right scope.
 
-- **GitHub Enterprise, but the job connects to `api.github.com`** —
-  the default endpoint is `https://api.github.com`. Set
-  `SEMVERTAG_GITHUB__ENDPOINT` (note the double underscore) as a
-  workflow-level env pointing to the instance's API root, e.g.
-  `https://github.example.com/api/v3`.
+### `GitHub repo not found: repo='...'`
 
-- **A bump-worthy push was never tagged** — the run for that push
-  failed or was skipped. Re-run it. Each run judges only the head
-  commit of its own push and does not look back, so the next push
-  cannot recover an earlier bump.
+`GITHUB_REPOSITORY` was not exported, or `--repo OWNER/REPO` was not
+passed. Inside GHA, `GITHUB_REPOSITORY` is auto-exported in every job;
+outside GHA, set it explicitly.
+
+### `Tag already exists: 'v...'`
+
+A previous run (or a concurrent run) already created this tag.
+semvertag refuses to silently succeed on a duplicate. Roll forward by
+pushing another commit that changes the bump, or delete the duplicate
+tag.
+
+### GitHub Enterprise, but the job connects to `api.github.com`
+
+The default endpoint is `https://api.github.com`. Set
+`SEMVERTAG_GITHUB__ENDPOINT` (note the double underscore) as a
+workflow-level env pointing to the instance's API root, e.g.
+`https://github.example.com/api/v3`.
+
+### A bump-worthy push was never tagged
+
+The run for that push failed or was skipped. Re-run it. Each run judges
+only the head commit of its own push and does not look back, so the
+next push cannot recover an earlier bump.

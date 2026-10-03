@@ -7,13 +7,13 @@
 
 </div>
 
-Auto-tag your GitLab repository with semantic version tags from CI —
-one tool, two strategies.
+Auto-tag your GitLab repository with semantic version tags from CI,
+using one of two bump strategies.
 
-semvertag reads the head commit and tag history from your GitLab
-project via the API, decides the appropriate semver bump based on the
-strategy you've configured, and creates the new git tag — all from a
-single command in your CI pipeline.
+From a single command in your CI pipeline, semvertag reads the head
+commit and tag history from your GitLab project through the API,
+decides the semver bump with the strategy you've configured, and
+creates the new git tag.
 
 ## Quick start
 
@@ -52,13 +52,13 @@ SEMVERTAG_PROJECT_ID=<your-project-id> \
 
 semvertag ships with two bump-decision strategies:
 
-- [**branch-prefix**](strategies/branch-prefix.md) — bump based on the
-  source branch of the latest merge commit (`feature/` → minor,
-  `bugfix/` / `hotfix/` → patch). The default.
-- [**conventional-commits**](strategies/conventional-commits.md) —
-  bump based on the head commit's Conventional Commits message
+- [branch-prefix](strategies/branch-prefix.md), the default, bumps
+  based on the source branch of the latest merge commit (`feature/` → minor,
+  `bugfix/` / `hotfix/` → patch).
+- [conventional-commits](strategies/conventional-commits.md) bumps
+  based on the head commit's Conventional Commits message
   (`feat:` → minor, `fix:` / `perf:` → patch, `!` or
   `BREAKING CHANGE:` → major).
 
-Both strategies are configurable via environment variables — see the
-strategy pages for the full configuration surface.
+Both strategies are configurable through environment variables. The
+strategy pages cover the full configuration surface.

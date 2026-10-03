@@ -18,7 +18,7 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
 
-Auto-tag your GitLab or GitHub repository with semantic version tags from CI — one tool, two strategies, two providers.
+Auto-tag your GitLab or GitHub repository with semantic version tags from CI. One tool covers both providers and offers two bump strategies.
 
 ## Install
 
@@ -51,8 +51,8 @@ semvertag:
 ```
 
 It runs `uvx semvertag tag` against your repo on the default branch.
-semvertag inspects the head commit + tag history, decides the
-appropriate semver bump, and creates the new tag via the GitLab API.
+semvertag inspects the head commit and the tag history, decides the
+semver bump, and creates the new tag through the GitLab API.
 
 > A one-line `include: - component: …` via the GitLab CI Catalog will
 > replace this snippet once the component is published. For now, paste
@@ -86,28 +86,29 @@ GitHub Enterprise setup, outputs, and troubleshooting.
 
 ## Strategies
 
-- **branch-prefix** (default): the head commit on the default branch
-  must be a merge commit whose subject names a `feature/` (minor),
-  `bugfix/`, or `hotfix/` (patch) branch.
-- **conventional-commits**: parses the head commit's
-  [Conventional Commits](https://www.conventionalcommits.org/)
-  header (`feat:` minor, `fix:`/`perf:` patch, `!` or `BREAKING
-  CHANGE:` major).
+The default `branch-prefix` strategy requires the head commit on the
+default branch to be a merge commit whose subject names a `feature/`
+(minor), `bugfix/`, or `hotfix/` (patch) branch.
 
-Both are configurable via env vars. See [docs](https://semvertag.modern-python.org)
+The `conventional-commits` strategy parses the head commit's
+[Conventional Commits](https://www.conventionalcommits.org/)
+header (`feat:` minor, `fix:`/`perf:` patch, `!` or `BREAKING
+CHANGE:` major).
+
+Both are configurable through environment variables. See [docs](https://semvertag.modern-python.org)
 for the full configuration surface.
 
 ## Built with
 
 semvertag stands on other `modern-python` libraries:
 
-- **[modern-di-typer](https://github.com/modern-python/modern-di-typer)** —
-  dependency-injection wiring for the Typer CLI. semvertag resolves its
+- [modern-di-typer](https://github.com/modern-python/modern-di-typer) wires
+  dependency injection into the Typer CLI. semvertag resolves its
   settings, API providers, and bump strategies through a `modern_di` container
   ([`semvertag/ioc.py`](https://github.com/modern-python/semvertag/blob/main/semvertag/ioc.py)).
-- **[httpware](https://github.com/modern-python/httpware)** — the resilient
-  HTTP client both providers use for the GitLab/GitHub REST calls (retries,
-  timeouts, typed decoding, secret redaction).
+- [httpware](https://github.com/modern-python/httpware) is the HTTP client
+  both providers use for the GitLab/GitHub REST calls. It handles retries,
+  timeouts, typed decoding, and secret redaction.
 
 ## 📚 [Documentation](https://semvertag.modern-python.org)
 
@@ -118,4 +119,4 @@ semvertag stands on other `modern-python` libraries:
 ## Part of `modern-python`
 
 Browse the full list of templates and libraries in
-[`modern-python`](https://github.com/modern-python) — see the org profile for the categorized index.
+[`modern-python`](https://github.com/modern-python). The org profile has the categorized index.
