@@ -63,7 +63,10 @@ def _format_outcome(outcome: Outcome, *, strategy: str) -> str:
             short = commit[:_COMMIT_SHORT_LEN]
             return f"Dry run: would create tag {tag} on commit {short} (strategy: {strategy}, bump: {bump.value})"
         case NoTags():
-            return "No tag created — no prior semver-conforming tag to bump from."
+            return (
+                "No tag created — no prior semver-conforming tag to bump from; "
+                "create an initial tag such as 0.1.0 on a default-branch commit."
+            )
         case AlreadyTagged(tag=tag):
             return f"No tag created — latest commit is already tagged {tag}."
         case NoBump(reason=reason):

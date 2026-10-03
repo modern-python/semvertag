@@ -95,6 +95,7 @@ def test_matrix_keeps_stderr_for_errors(quiet: bool) -> None:
     ("outcome", "expected"),
     [
         (NoTags(commit="abc1234def"), "no prior semver-conforming tag"),
+        (NoTags(commit="abc1234def"), "create an initial tag such as 0.1.0"),
         (AlreadyTagged(tag="1.2.0", commit="abc1234def"), "already tagged 1.2.0"),
         (
             NoBump(status="no_merge_commit", reason="Latest commit is not a merge commit.", commit="abc1234def"),
@@ -105,7 +106,7 @@ def test_matrix_keeps_stderr_for_errors(quiet: bool) -> None:
 def test_emit_renders_no_bump_outcomes_as_human_sentences(outcome: Outcome, expected: str) -> None:
     output, stdout_buf, _stderr = _make_pair()
     output.emit(outcome, strategy=_STRATEGY)
-    stdout_text: typing.Final = stdout_buf.getvalue()
+    stdout_text: typing.Final = " ".join(stdout_buf.getvalue().split())
     assert "No tag created" in stdout_text
     assert expected in stdout_text
 

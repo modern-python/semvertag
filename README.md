@@ -26,6 +26,10 @@ Auto-tag your GitLab or GitHub repository with semantic version tags from CI —
 uvx semvertag tag
 ```
 
+semvertag bumps from the highest existing semver tag and never creates
+the first one. Before the first run, create a plain semver tag such as
+`0.1.0` (a `v` prefix does not parse and is ignored).
+
 ## Use it in GitLab CI
 
 Paste this job into your `.gitlab-ci.yml`:
@@ -83,8 +87,8 @@ GitHub Enterprise setup, outputs, and troubleshooting.
 ## Strategies
 
 - **branch-prefix** (default): the head commit on the default branch
-  must be a merge commit whose source branch starts with `feature/`
-  (minor), `bugfix/`, or `hotfix/` (patch).
+  must be a merge commit whose subject names a `feature/` (minor),
+  `bugfix/`, or `hotfix/` (patch) branch.
 - **conventional-commits**: parses the head commit's
   [Conventional Commits](https://www.conventionalcommits.org/)
   header (`feat:` minor, `fix:`/`perf:` patch, `!` or `BREAKING

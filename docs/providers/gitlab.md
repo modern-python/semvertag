@@ -44,6 +44,12 @@ bump is warranted by the configured strategy, pushes a new tag to the
 project's `origin`. If no bump is warranted, the job exits 0 without
 pushing.
 
+> **First tag.** semvertag bumps from the highest existing semver tag
+> and never creates the first one. It reads only plain semver tags such
+> as `0.1.0`; a `v` prefix (`v0.1.0`) does not parse and is ignored. Until
+> one exists, every run reports `no_tags` and exits 0. Push one with
+> `git tag 0.1.0 && git push origin 0.1.0`.
+
 > **Concurrency default.** `resource_group: semvertag` makes GitLab
 > serialize concurrent `semvertag` jobs across pipelines on the same
 > project — back-to-back pushes will queue rather than race the
@@ -117,10 +123,11 @@ write scope, the minimal job snippet above is the entire setup.
 ## Branch-prefix vs conventional-commits
 
 Pick `branch-prefix` if your team merges merge requests with branch
-names that follow a `fix/...`, `feat/...`, `chore/...` convention
-and lands them as merge commits. semvertag reads the head commit's
-source-branch prefix and bumps accordingly — `fix/` bumps patch,
-`feat/` bumps minor, `chore/` bumps nothing. With squash merges the
+names that follow a `feature/...`, `bugfix/...`, `hotfix/...`
+convention and lands them as merge commits. semvertag reads the head
+commit's source-branch prefix and bumps accordingly: `feature/` bumps
+minor, `bugfix/` and `hotfix/` bump patch, and any other prefix bumps
+nothing. With squash merges the
 head is not a merge commit and the run reports `no_merge_commit`.
 This is the default. See
 [Branch-prefix strategy](../strategies/branch-prefix.md) for the full

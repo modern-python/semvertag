@@ -7,7 +7,9 @@ from semvertag._types import Bump, RunResult
 # These are the JSON wire reasons. The human terminal path (_output._format_outcome)
 # words NoTags/AlreadyTagged differently on purpose — edit both if you change the
 # message for one audience.
-_NO_TAGS_REASON: typing.Final = "No prior semver-conforming tags found; not seeding an initial tag in v1.0."
+_NO_TAGS_REASON: typing.Final = (
+    "No prior semver-conforming tags found; create an initial tag such as 0.1.0 on a default-branch commit."
+)
 _ALREADY_TAGGED_REASON: typing.Final = "Latest commit already tagged."
 
 
@@ -31,7 +33,7 @@ class DryRun:
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 class NoTags:
-    """No prior semver tag to bump from; v1.0 does not seed one."""
+    """No prior semver tag to bump from; semvertag does not create the first one."""
 
     commit: str
 
