@@ -1,6 +1,5 @@
 import dataclasses
 import enum
-import typing
 
 
 class Bump(enum.Enum):
@@ -8,12 +7,6 @@ class Bump(enum.Enum):
     PATCH = "patch"
     MINOR = "minor"
     MAJOR = "major"
-
-
-@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-class ConfigSource:
-    layer: typing.Literal["cli", "env", "default"]
-    detail: str
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
