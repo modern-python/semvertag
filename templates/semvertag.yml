@@ -5,6 +5,10 @@ spec:
       type: string
       options: [branch-prefix, conventional-commits]
       default: branch-prefix
+    dry-run:
+      description: 'If true, compute the bump and report the planned tag but do not push it.'
+      type: boolean
+      default: false
 ---
 semvertag:
   image: python:3.13-slim@sha256:b04b5d7233d2ad9c379e22ea8927cd1378cd15c60d4ef876c065b25ea8fb3bf3
@@ -14,4 +18,4 @@ semvertag:
   before_script:
     - pip install --quiet --no-cache-dir 'uv>=0.4,<1'
   script:
-    - uvx 'semvertag>=0.1,<1' tag
+    - uvx 'semvertag>=0.5.0,<1' tag $(if $[[ inputs.dry-run ]]; then echo --dry-run; fi)
