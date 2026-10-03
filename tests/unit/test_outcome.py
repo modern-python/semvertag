@@ -38,6 +38,13 @@ def test_no_tags_maps_with_none_bump_and_fixed_reason() -> None:
     )
 
 
+def test_no_tags_reason_says_how_to_seed_the_first_tag() -> None:
+    reason: typing.Final = to_run_result(NoTags(commit=_COMMIT), strategy=_STRATEGY).reason
+    assert reason is not None
+    assert "create an initial tag such as 0.1.0" in reason
+    assert "v1.0" not in reason
+
+
 def test_already_tagged_maps_with_tag_and_fixed_reason() -> None:
     result: typing.Final = to_run_result(AlreadyTagged(tag="0.3.1", commit=_COMMIT), strategy=_STRATEGY)
     assert result == RunResult(

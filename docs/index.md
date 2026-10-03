@@ -33,6 +33,10 @@ semvertag:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 ```
 
+semvertag bumps from the highest existing semver tag and never creates
+the first one. Before the first run, create a plain semver tag such as
+`0.1.0` (a `v` prefix does not parse and is ignored).
+
 For local testing or one-off invocations:
 
 ```sh

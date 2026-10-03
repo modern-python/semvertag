@@ -40,6 +40,12 @@ a bump is warranted by the configured strategy, creates a new tag
 ref via the GitHub API. If no bump is warranted, the job exits 0
 without pushing.
 
+> **First tag.** semvertag bumps from the highest existing semver tag
+> and never creates the first one. It reads only plain semver tags such
+> as `0.1.0`; a `v` prefix (`v0.1.0`) does not parse and is ignored. Until
+> one exists, every run reports `no_tags` and exits 0. Push one with
+> `git tag 0.1.0 && git push origin 0.1.0`.
+
 > **Auto-detection.** semvertag detects GitHub Actions from the
 > `GITHUB_ACTIONS=true` env var that GHA sets automatically. The
 > `--provider` flag is therefore optional inside GHA — explicit
@@ -92,7 +98,7 @@ When you give the step an `id:`, downstream steps can read three outputs:
 
 | Output | Value |
 |---|---|
-| `tag` | The created tag (e.g. `v1.2.3`), or empty string when `status` is `no-bump`. |
+| `tag` | The created tag (e.g. `1.2.3`), or empty string when `status` is `no-bump`. |
 | `bump` | `none` \| `patch` \| `minor` \| `major`. |
 | `status` | `created` (tag pushed) \| `no-bump` (nothing to tag — no prior tag, already tagged, no merge commit, or non-conforming commit). On CLI error the action itself exits non-zero and this output is not written. |
 
@@ -189,12 +195,12 @@ is the entire setup.
 ## Branch-prefix vs conventional-commits
 
 Pick `branch-prefix` if your team merges PRs with branch names that
-follow a `fix/...`, `feat/...`, `chore/...` convention and lands them
-as merge commits. semvertag reads the head commit's source-branch
-prefix and bumps accordingly — `fix/` bumps patch, `feat/` bumps
-minor, `chore/` bumps nothing. With squash merges the head is not a
-merge commit and the run reports `no_merge_commit`. This is the
-default. See
+follow a `feature/...`, `bugfix/...`, `hotfix/...` convention and lands
+them as merge commits. semvertag reads the head commit's source-branch
+prefix and bumps accordingly: `feature/` bumps minor, `bugfix/` and
+`hotfix/` bump patch, and any other prefix bumps nothing. With squash
+merges the head is not a merge commit and the run reports
+`no_merge_commit`. This is the default. See
 [Branch-prefix strategy](../strategies/branch-prefix.md) for the full
 prefix-to-bump table and edge-case behavior.
 
