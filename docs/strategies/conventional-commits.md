@@ -19,7 +19,7 @@ commits since the latest tag; see [Head commit only](#head-commit-only).
 
 The grammar checked is `^(type)(?:\((scope)\))?(!)?:`. Anything not
 matching this pattern returns `none`. The `!` marker takes precedence
-over the type — `chore!:` is a major bump even though `chore` is
+over the type: `chore!:` is a major bump even though `chore` is
 otherwise unmapped.
 
 ## Customizing the type lists
@@ -27,9 +27,9 @@ otherwise unmapped.
 The strategy reads its type lists from the application's settings
 layer:
 
-- `minor_types` — tuple of types that trigger a minor bump (default
+- `minor_types`: tuple of types that trigger a minor bump (default
   `("feat",)`).
-- `patch_types` — tuple of types that trigger a patch bump (default
+- `patch_types`: tuple of types that trigger a patch bump (default
   `("fix", "perf")`).
 
 Both lists are validated against the lowercase-letters-only regex
@@ -58,13 +58,13 @@ earlier bump is not recovered.
 
 If your team merges via short-lived prefixed branches (`feature/...`,
 `bugfix/...`) and does not enforce Conventional Commits on each
-commit, switch to [Branch prefix](branch-prefix.md) — it reads the
-merge commit's source branch rather than the per-commit subject.
+commit, switch to [Branch prefix](branch-prefix.md), which reads the
+merge commit's source branch instead of the per-commit subject.
 
 ## Consumer integration
 
 The strategy is selected per project via the `strategy:` input on the
 relevant provider's component / action. See:
 
-- [GitLab CI](../providers/gitlab.md) — set
+- [GitLab CI](../providers/gitlab.md): set
   `strategy: conventional-commits` on the `include: - component:` block.
