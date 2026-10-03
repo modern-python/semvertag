@@ -7,17 +7,44 @@
 
 </div>
 
-Auto-tag your GitLab repository with semantic version tags from CI,
-using one of two bump strategies.
+Auto-tag your GitHub or GitLab repository with semantic version tags
+from CI, using one of two bump strategies.
 
 From a single command in your CI pipeline, semvertag reads the head
-commit and tag history from your GitLab project through the API,
-decides the semver bump with the strategy you've configured, and
-creates the new git tag.
+commit and tag history through the GitHub or GitLab API, decides the
+semver bump with the strategy you've configured, and creates the new
+git tag.
 
 ## Quick start
 
-In GitLab CI, run semvertag as a job on the default branch (see
+semvertag bumps from the highest existing semver tag and never creates
+the first one. Before the first run, create a plain semver tag such as
+`0.1.0` (a `v` prefix does not parse and is ignored).
+
+### GitHub Actions
+
+Run the action on pushes to the default branch (see
+[GitHub Actions](providers/github.md) for token options and outputs):
+
+```yaml
+name: semvertag
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: modern-python/semvertag@v0
+```
+
+### GitLab CI
+
+Run semvertag as a job on the default branch (see
 [GitLab CI](providers/gitlab.md) for the full snippet):
 
 ```yaml
@@ -33,11 +60,7 @@ semvertag:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 ```
 
-semvertag bumps from the highest existing semver tag and never creates
-the first one. Before the first run, create a plain semver tag such as
-`0.1.0` (a `v` prefix does not parse and is ignored).
-
-For local testing or one-off invocations:
+For local testing or one-off invocations against GitLab:
 
 ```sh
 SEMVERTAG_TOKEN=<your-gitlab-token> \
@@ -53,7 +76,8 @@ SEMVERTAG_PROJECT_ID=<your-project-id> \
 semvertag ships with two bump-decision strategies:
 
 - [branch-prefix](strategies/branch-prefix.md), the default, bumps
-  based on the source branch of the latest merge commit (`feature/` → minor,
+  based on the source branch named in the head commit, which must be a
+  merge commit (`feature/` → minor,
   `bugfix/` / `hotfix/` → patch).
 - [conventional-commits](strategies/conventional-commits.md) bumps
   based on the head commit's Conventional Commits message
