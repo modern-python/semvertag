@@ -163,6 +163,18 @@ def test_redacts_tokens_in_error_message() -> None:
     assert _REDACTED in stderr_text
 
 
+def test_no_run_result_field_carries_user_supplied_text() -> None:
+    audited_fields: typing.Final = frozenset(_EXPECTED_KEY_ORDER)
+    actual_fields: typing.Final = frozenset(field.name for field in dataclasses.fields(RunResult))
+    assert actual_fields == audited_fields, (
+        "RunResult's fields changed. JsonOutput.emit writes them to stdout without redaction, which is safe only "
+        "while every field holds semvertag-controlled values (fixed strings, enum values, tag names, commit shas). "
+        "Audit the changed fields; if any can carry user-supplied text such as a token, redact that field in "
+        "JsonOutput.emit (per field: redact() would also mask the 40-hex commit sha). Then update this test. "
+        f"Added: {sorted(actual_fields - audited_fields)}, removed: {sorted(audited_fields - actual_fields)}"
+    )
+
+
 def test_run_result_rejects_positional_construction() -> None:
     with pytest.raises(TypeError):
         RunResult("conv", "minor", "created", "1.0.0", "abc", None)  # ty: ignore[too-many-positional-arguments, missing-argument]
