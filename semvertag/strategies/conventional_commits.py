@@ -6,11 +6,16 @@ import pydantic
 
 from semvertag._commit_parse import body_lines, subject_line
 from semvertag._types import Bump, Commit
+from semvertag.strategies._base import Decline
 
 
 _TYPE_PATTERN: typing.Final = re.compile(r"^(?P<type>[a-z]+)(?:\((?P<scope>[^)]+)\))?(?P<bang>!?):")
 _VALID_TYPE_RE: typing.Final = re.compile(r"^[a-z]+$")
 _BREAKING_TOKENS: typing.Final = ("BREAKING CHANGE:", "BREAKING-CHANGE:")
+_NOT_CONFORMING: typing.Final = Decline(
+    status="no_conforming_commit", reason="Commit subject is not a Conventional Commit."
+)
+_NO_BUMPING_TYPE: typing.Final = Decline(status="no_bumping_type", reason="Commit type is not configured to bump.")
 
 
 class ConventionalCommitsConfig(pydantic.BaseModel):
@@ -32,15 +37,13 @@ class ConventionalCommitsConfig(pydantic.BaseModel):
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 class ConventionalCommitsStrategy:
     name: typing.ClassVar[str] = "conventional-commits"
-    no_bump_status: typing.ClassVar[str] = "no_conforming_commit"
-    no_bump_reason: typing.ClassVar[str] = "No conforming Conventional Commits type found in commit message."
     config: ConventionalCommitsConfig
 
-    def decide(self, commit: Commit) -> Bump:
+    def decide(self, commit: Commit) -> Bump | Decline:
         subject: typing.Final = subject_line(commit.message)
         match: typing.Final = _TYPE_PATTERN.match(subject)
         if match is None:
-            return Bump.NONE
+            return _NOT_CONFORMING
         for line in body_lines(commit.message):
             stripped = line.lstrip()
             if any(stripped.startswith(token) for token in _BREAKING_TOKENS):
@@ -52,4 +55,4 @@ class ConventionalCommitsStrategy:
             return Bump.MINOR
         if commit_type in self.config.patch_types:
             return Bump.PATCH
-        return Bump.NONE
+        return _NO_BUMPING_TYPE

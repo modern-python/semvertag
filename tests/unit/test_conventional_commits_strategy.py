@@ -4,6 +4,7 @@ import pydantic
 import pytest
 
 from semvertag._types import Bump, Commit
+from semvertag.strategies._base import Decline
 from semvertag.strategies.conventional_commits import (
     ConventionalCommitsConfig,
     ConventionalCommitsStrategy,
@@ -11,6 +12,10 @@ from semvertag.strategies.conventional_commits import (
 
 
 _SHA: typing.Final = "abc1234"
+_NOT_CONFORMING: typing.Final = Decline(
+    status="no_conforming_commit", reason="Commit subject is not a Conventional Commit."
+)
+_NO_BUMPING_TYPE: typing.Final = Decline(status="no_bumping_type", reason="Commit type is not configured to bump.")
 
 
 @pytest.fixture
@@ -84,10 +89,10 @@ def test_returns_major_when_footer_present_on_unrecognized_type(
     assert default_strategy.decide(_commit(msg)) is Bump.MAJOR
 
 
-def test_returns_none_when_type_is_unrecognized_and_no_breaking_signal(
+def test_declines_when_type_is_unrecognized_and_no_breaking_signal(
     default_strategy: ConventionalCommitsStrategy,
 ) -> None:
-    assert default_strategy.decide(_commit("chore: bump deps")) is Bump.NONE
+    assert default_strategy.decide(_commit("chore: bump deps")) == _NO_BUMPING_TYPE
 
 
 @pytest.mark.parametrize(
@@ -102,17 +107,17 @@ def test_returns_none_when_type_is_unrecognized_and_no_breaking_signal(
         "revert: previous change",
     ],
 )
-def test_returns_none_for_unrecognized_types(
+def test_declines_for_unrecognized_types(
     default_strategy: ConventionalCommitsStrategy,
     message: str,
 ) -> None:
-    assert default_strategy.decide(_commit(message)) is Bump.NONE
+    assert default_strategy.decide(_commit(message)) == _NO_BUMPING_TYPE
 
 
-def test_returns_none_when_subject_has_no_cc_header(
+def test_declines_when_subject_has_no_cc_header(
     default_strategy: ConventionalCommitsStrategy,
 ) -> None:
-    assert default_strategy.decide(_commit("Fixed thing")) is Bump.NONE
+    assert default_strategy.decide(_commit("Fixed thing")) == _NOT_CONFORMING
 
 
 def test_returns_minor_when_bang_appears_in_description_not_before_colon(
@@ -128,8 +133,8 @@ def test_returns_minor_when_breaking_change_phrase_is_mid_body_not_a_footer(
     assert default_strategy.decide(_commit(msg)) is Bump.MINOR
 
 
-def test_returns_none_when_type_is_uppercase(default_strategy: ConventionalCommitsStrategy) -> None:
-    assert default_strategy.decide(_commit("FEAT: shouting")) is Bump.NONE
+def test_declines_when_type_is_uppercase(default_strategy: ConventionalCommitsStrategy) -> None:
+    assert default_strategy.decide(_commit("FEAT: shouting")) == _NOT_CONFORMING
 
 
 def test_returns_minor_when_breaking_change_footer_is_lowercase(
@@ -139,14 +144,14 @@ def test_returns_minor_when_breaking_change_footer_is_lowercase(
     assert default_strategy.decide(_commit(msg)) is Bump.MINOR
 
 
-def test_returns_none_when_message_is_empty(default_strategy: ConventionalCommitsStrategy) -> None:
-    assert default_strategy.decide(_commit("")) is Bump.NONE
+def test_declines_when_message_is_empty(default_strategy: ConventionalCommitsStrategy) -> None:
+    assert default_strategy.decide(_commit("")) == _NOT_CONFORMING
 
 
-def test_returns_none_when_message_is_whitespace_only(
+def test_declines_when_message_is_whitespace_only(
     default_strategy: ConventionalCommitsStrategy,
 ) -> None:
-    assert default_strategy.decide(_commit("   \n\n   \n")) is Bump.NONE
+    assert default_strategy.decide(_commit("   \n\n   \n")) == _NOT_CONFORMING
 
 
 def test_returns_major_when_crlf_line_endings_used(
@@ -174,16 +179,16 @@ def test_has_expected_class_var_name_and_satisfies_protocol_shape(
     assert callable(default_strategy.decide)
 
 
-def test_returns_none_when_subject_has_leading_whitespace(
+def test_declines_when_subject_has_leading_whitespace(
     default_strategy: ConventionalCommitsStrategy,
 ) -> None:
-    assert default_strategy.decide(_commit("  feat: foo")) is Bump.NONE
+    assert default_strategy.decide(_commit("  feat: foo")) == _NOT_CONFORMING
 
 
-def test_returns_none_when_space_appears_before_colon(
+def test_declines_when_space_appears_before_colon(
     default_strategy: ConventionalCommitsStrategy,
 ) -> None:
-    assert default_strategy.decide(_commit("feat : foo")) is Bump.NONE
+    assert default_strategy.decide(_commit("feat : foo")) == _NOT_CONFORMING
 
 
 @pytest.mark.parametrize(
@@ -221,3 +226,11 @@ def test_config_accepts_only_lowercase_letter_types() -> None:
     )
     assert "feature" in config.minor_types
     assert "hotfix" in config.patch_types
+
+
+def test_declines_merge_commit_subject_as_not_conforming(default_strategy: ConventionalCommitsStrategy) -> None:
+    assert default_strategy.decide(_commit("Merge branch 'feature/x' into main")) == _NOT_CONFORMING
+
+
+def test_declines_scoped_non_bumping_type_as_no_bumping_type(default_strategy: ConventionalCommitsStrategy) -> None:
+    assert default_strategy.decide(_commit("chore(deps): bump uv")) == _NO_BUMPING_TYPE

@@ -4,12 +4,18 @@ import pydantic
 import pytest
 
 from semvertag._types import Bump, Commit
-from semvertag.strategies._base import BumpStrategy
+from semvertag.strategies._base import BumpStrategy, Decline
 from semvertag.strategies.branch_prefix import BranchPrefixConfig, BranchPrefixStrategy
 
 
 DEFAULT_STRATEGY: typing.Final = BranchPrefixStrategy(config=BranchPrefixConfig())
 COMMIT_SHA: typing.Final = "0" * 40
+_NO_MERGE_COMMIT: typing.Final = Decline(
+    status="no_merge_commit", reason="Latest commit on default branch is not a merge commit."
+)
+_UNMAPPED_PREFIX: typing.Final = Decline(
+    status="unmapped_branch_prefix", reason="Merge commit's source branch has no configured prefix."
+)
 
 
 def _commit(message: str) -> Commit:
@@ -17,16 +23,16 @@ def _commit(message: str) -> Commit:
 
 
 _NON_MERGE_CASES: typing.Final = [
-    ("feat: ship the new login", Bump.NONE),
-    ("docs: update README", Bump.NONE),
-    ("", Bump.NONE),
-    ("merge branch 'feature/x' into main", Bump.NONE),
+    ("feat: ship the new login", _NO_MERGE_COMMIT),
+    ("docs: update README", _NO_MERGE_COMMIT),
+    ("", _NO_MERGE_COMMIT),
+    ("merge branch 'feature/x' into main", _NO_MERGE_COMMIT),
 ]
 
 
 @pytest.mark.parametrize(("message", "expected"), _NON_MERGE_CASES)
-def test_returns_none_when_message_is_not_a_merge_commit(message: str, expected: Bump) -> None:
-    assert DEFAULT_STRATEGY.decide(_commit(message)) is expected
+def test_declines_as_no_merge_commit_when_message_is_not_a_merge_commit(message: str, expected: Bump | Decline) -> None:
+    assert DEFAULT_STRATEGY.decide(_commit(message)) == expected
 
 
 _MINOR_CASES: typing.Final = [
@@ -37,8 +43,8 @@ _MINOR_CASES: typing.Final = [
 
 
 @pytest.mark.parametrize(("message", "expected"), _MINOR_CASES)
-def test_returns_minor_when_message_contains_feature_prefix(message: str, expected: Bump) -> None:
-    assert DEFAULT_STRATEGY.decide(_commit(message)) is expected
+def test_returns_minor_when_message_contains_feature_prefix(message: str, expected: Bump | Decline) -> None:
+    assert DEFAULT_STRATEGY.decide(_commit(message)) == expected
 
 
 _PATCH_CASES: typing.Final = [
@@ -49,8 +55,8 @@ _PATCH_CASES: typing.Final = [
 
 
 @pytest.mark.parametrize(("message", "expected"), _PATCH_CASES)
-def test_returns_patch_when_message_contains_bugfix_or_hotfix_prefix(message: str, expected: Bump) -> None:
-    assert DEFAULT_STRATEGY.decide(_commit(message)) is expected
+def test_returns_patch_when_message_contains_bugfix_or_hotfix_prefix(message: str, expected: Bump | Decline) -> None:
+    assert DEFAULT_STRATEGY.decide(_commit(message)) == expected
 
 
 def test_returns_minor_when_message_contains_both_feature_and_bugfix_prefixes() -> None:
@@ -59,15 +65,15 @@ def test_returns_minor_when_message_contains_both_feature_and_bugfix_prefixes() 
 
 
 _UNRECOGNIZED_MERGE_CASES: typing.Final = [
-    ("Merge branch 'release/2.0' into main", Bump.NONE),
-    ("Merge branch 'chore/cleanup' into main", Bump.NONE),
-    ("Merge branch 'develop' into main", Bump.NONE),
+    ("Merge branch 'release/2.0' into main", _UNMAPPED_PREFIX),
+    ("Merge branch 'chore/cleanup' into main", _UNMAPPED_PREFIX),
+    ("Merge branch 'develop' into main", _UNMAPPED_PREFIX),
 ]
 
 
 @pytest.mark.parametrize(("message", "expected"), _UNRECOGNIZED_MERGE_CASES)
-def test_returns_none_when_merge_message_has_no_recognized_prefix(message: str, expected: Bump) -> None:
-    assert DEFAULT_STRATEGY.decide(_commit(message)) is expected
+def test_declines_as_unmapped_branch_prefix_for_unknown_merge_prefix(message: str, expected: Bump | Decline) -> None:
+    assert DEFAULT_STRATEGY.decide(_commit(message)) == expected
 
 
 _ALL_CASES: typing.Final = _NON_MERGE_CASES + _MINOR_CASES + _PATCH_CASES + _UNRECOGNIZED_MERGE_CASES
@@ -95,8 +101,8 @@ def test_honors_custom_minor_prefix_when_config_overrides_default() -> None:
     )
     assert custom.decide(_commit("Auto-merge: feat/new-thing")) is Bump.MINOR
     assert custom.decide(_commit("Auto-merge: fix/bug-123")) is Bump.PATCH
-    assert custom.decide(_commit("Auto-merge: feature/x")) is Bump.NONE
-    assert custom.decide(_commit("Merge branch 'feat/x' into main")) is Bump.NONE
+    assert custom.decide(_commit("Auto-merge: feature/x")) == _UNMAPPED_PREFIX
+    assert custom.decide(_commit("Merge branch 'feat/x' into main")) == _NO_MERGE_COMMIT
 
 
 def test_recognizes_github_pr_merge_subject_under_defaults() -> None:
@@ -104,7 +110,7 @@ def test_recognizes_github_pr_merge_subject_under_defaults() -> None:
     assert default.decide(_commit("Merge pull request #42 from org/feature/new-thing")) is Bump.MINOR
     assert default.decide(_commit("Merge pull request #43 from org/bugfix/bug-123")) is Bump.PATCH
     assert default.decide(_commit("Merge pull request #44 from org/hotfix/urgent")) is Bump.PATCH
-    assert default.decide(_commit("Merge pull request #45 from org/chore/cleanup")) is Bump.NONE
+    assert default.decide(_commit("Merge pull request #45 from org/chore/cleanup")) == _UNMAPPED_PREFIX
 
 
 def test_recognizes_gitlab_merge_branch_subject_under_defaults() -> None:
@@ -132,12 +138,12 @@ def test_raises_validation_error_when_config_field_is_empty(invalid_kwargs: dict
 
 def test_ignores_body_lines_when_subject_is_not_a_merge() -> None:
     message: typing.Final = "feat: build pipeline\n\nReviewed-by: alice\nfeature/x mentioned in body"
-    assert DEFAULT_STRATEGY.decide(_commit(message)) is Bump.NONE
+    assert DEFAULT_STRATEGY.decide(_commit(message)) == _NO_MERGE_COMMIT
 
 
 def test_ignores_body_prefixes_when_subject_is_an_unrecognized_merge() -> None:
     message: typing.Final = "Merge branch 'release/2.0' into main\nfeature/foo touched in body\nbugfix/y also mentioned"
-    assert DEFAULT_STRATEGY.decide(_commit(message)) is Bump.NONE
+    assert DEFAULT_STRATEGY.decide(_commit(message)) == _UNMAPPED_PREFIX
 
 
 def test_returns_minor_when_subject_is_a_feature_merge_with_trailing_body() -> None:
@@ -162,13 +168,13 @@ def test_returns_patch_for_non_merge_commit_when_flag_enabled(message: str) -> N
         ("Merge branch 'bugfix/y' into main", Bump.PATCH),
     ],
 )
-def test_flag_leaves_recognized_merge_paths_unchanged(message: str, expected: Bump) -> None:
-    assert _FALLBACK_STRATEGY.decide(_commit(message)) is expected
+def test_flag_leaves_recognized_merge_paths_unchanged(message: str, expected: Bump | Decline) -> None:
+    assert _FALLBACK_STRATEGY.decide(_commit(message)) == expected
 
 
 @pytest.mark.parametrize("message", [message for message, _ in _UNRECOGNIZED_MERGE_CASES])
-def test_flag_leaves_unrecognized_merge_as_none(message: str) -> None:
-    assert _FALLBACK_STRATEGY.decide(_commit(message)) is Bump.NONE
+def test_flag_leaves_unrecognized_merge_declined_as_unmapped_prefix(message: str) -> None:
+    assert _FALLBACK_STRATEGY.decide(_commit(message)) == _UNMAPPED_PREFIX
 
 
 def test_patch_on_non_merge_commit_defaults_to_false() -> None:

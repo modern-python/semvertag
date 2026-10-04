@@ -3,7 +3,6 @@ import enum
 
 
 class Bump(enum.Enum):
-    NONE = "none"
     PATCH = "patch"
     MINOR = "minor"
     MAJOR = "major"

@@ -7,7 +7,7 @@ from semvertag._outcome import AlreadyTagged, Created, DryRun, NoBump, NoTags, O
 from semvertag._output import Output
 from semvertag._types import Bump, Tag
 from semvertag.providers._base import Provider
-from semvertag.strategies._base import BumpStrategy
+from semvertag.strategies._base import BumpStrategy, Decline
 
 
 _V_PREFIX: typing.Final = "v"
@@ -35,20 +35,17 @@ class SemvertagUseCase:
             return self._emit(output, AlreadyTagged(tag=latest_tag.name, commit=commit.sha))
 
         output.progress("Computing bump...")
-        bump: typing.Final = self.strategy.decide(commit)
-        if bump is Bump.NONE:
-            return self._emit(
-                output,
-                NoBump(status=self.strategy.no_bump_status, reason=self.strategy.no_bump_reason, commit=commit.sha),
-            )
+        decision: typing.Final = self.strategy.decide(commit)
+        if isinstance(decision, Decline):
+            return self._emit(output, NoBump(status=decision.status, reason=decision.reason, commit=commit.sha))
 
-        new_tag: typing.Final = _tag_prefix(latest_tag) + _compute_new_version(latest_version, bump)
+        new_tag: typing.Final = _tag_prefix(latest_tag) + _compute_new_version(latest_version, decision)
         if dry_run:
-            return self._emit(output, DryRun(tag=new_tag, bump=bump, commit=commit.sha))
+            return self._emit(output, DryRun(tag=new_tag, bump=decision, commit=commit.sha))
 
         output.progress(f"Creating tag {new_tag}...")
         self.provider.create_tag(name=new_tag, commit_sha=commit.sha)
-        return self._emit(output, Created(tag=new_tag, bump=bump, commit=commit.sha))
+        return self._emit(output, Created(tag=new_tag, bump=decision, commit=commit.sha))
 
     def _emit(self, output: Output, outcome: Outcome) -> Outcome:
         output.emit(outcome, strategy=self.strategy.name)

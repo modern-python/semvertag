@@ -50,9 +50,9 @@ runs:
         # to no argument; non-empty expands to the literal `--dry-run`.
         result=$(uvx 'semvertag>=0.5.0,<1' tag --json $dry_run_flag)
         printf '%s\n' "$result"
-        # Normalize the CLI's internal status (`no_tags`, `already_tagged`,
-        # `no_merge_commit`, `no_conforming_commit`, `dry_run`, ...) to a stable
-        # consumer-facing enum. `set -euo pipefail` ensures we never reach
+        # Normalize the CLI's internal status to a stable consumer-facing enum:
+        # `created`, or `no-bump` for any other status (`no_tags`, `dry_run`, a
+        # strategy's decline, ...). `set -euo pipefail` ensures we never reach
         # here on CLI errors, so there is no `error` value to surface.
         case "$(jq -r '.status' <<<"$result")" in
           created) status='created' ;;

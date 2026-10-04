@@ -13,7 +13,7 @@ behavior.
 |---|---|
 | `feature/` | minor |
 | `bugfix/` or `hotfix/` | patch |
-| anything else | none |
+| anything else | none, status `unmapped_branch_prefix` |
 
 A bump of `none` means the commit contributes nothing to the release
 decision. `branch-prefix` never produces a major bump. Promote
@@ -26,12 +26,12 @@ to a new major version manually, or switch to
 The strategy only fires on commits whose subject contains one of the
 default merge marks: the literal string `Merge branch` (the default
 `git merge` subject) or `Merge pull request` (GitHub's merge-commit
-subject). Commits without one of those marks return `none` regardless
-of prefix. For example:
+subject). Commits without one of those marks are declined with
+`no_merge_commit` regardless of prefix. For example:
 
 - Standard `git merge feature/foo` → subject `Merge branch 'feature/foo' into main` → bump = minor ✓
 - GitHub's `Merge pull request #N from user/feature/foo` → bump = minor ✓
-- Direct pushes to the default branch → bump = none, unless
+- Direct pushes to the default branch → bump = none (`no_merge_commit`), unless
   `patch_on_non_merge_commit` is enabled (see below), in which case
   bump = patch.
 

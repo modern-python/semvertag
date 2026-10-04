@@ -7,6 +7,7 @@ import semver
 from semvertag._outcome import AlreadyTagged, Created, DryRun, NoBump, NoTags, Outcome
 from semvertag._types import Bump, Commit, Tag
 from semvertag._use_case import SemvertagUseCase, _compute_new_version, _select_latest_semver_tag
+from semvertag.strategies._base import Decline
 
 
 _MERGE_MESSAGE: typing.Final = "Merge branch 'feature/foo' into main"
@@ -17,14 +18,7 @@ _LATEST_TAG_NAME: typing.Final = "1.4.2"
 _EXPECTED_NEW_TAG: typing.Final = "1.5.0"
 _BRANCH_PREFIX_STRATEGY: typing.Final = "branch-prefix"
 _CONVENTIONAL_STRATEGY: typing.Final = "conventional-commits"
-_NO_BUMP_STATUS_BY_STRATEGY: typing.Final = {
-    _BRANCH_PREFIX_STRATEGY: "no_merge_commit",
-    _CONVENTIONAL_STRATEGY: "no_conforming_commit",
-}
-_NO_BUMP_REASON_BY_STRATEGY: typing.Final = {
-    _BRANCH_PREFIX_STRATEGY: "Latest commit on default branch is not a merge commit.",
-    _CONVENTIONAL_STRATEGY: "No conforming Conventional Commits type found in commit message.",
-}
+_STUB_DECLINE: typing.Final = Decline(status="stub_declined", reason="Stub strategy declined.")
 
 
 @dataclasses.dataclass(slots=True, kw_only=True)
@@ -66,12 +60,10 @@ class _StubProvider:
 @dataclasses.dataclass(slots=True, kw_only=True)
 class _StubStrategy:
     name: str
-    no_bump_status: str = "no_merge_commit"
-    no_bump_reason: str = "Latest commit on default branch is not a merge commit."
-    bump_to_return: Bump
+    decision: Bump | Decline
 
-    def decide(self, commit: Commit) -> Bump:  # noqa: ARG002
-        return self.bump_to_return
+    def decide(self, commit: Commit) -> Bump | Decline:  # noqa: ARG002
+        return self.decision
 
 
 def _make_use_case(
@@ -79,19 +71,14 @@ def _make_use_case(
     commit_message: str = _MERGE_MESSAGE,
     commit_sha: str = _LATEST_SHA,
     tags: list[Tag] | None = None,
-    bump: Bump = Bump.MINOR,
+    decision: Bump | Decline = Bump.MINOR,
     strategy_name: str = _BRANCH_PREFIX_STRATEGY,
 ) -> tuple[SemvertagUseCase, _StubProvider, _RecordingOutput]:
     provider: typing.Final = _StubProvider(
         commit=Commit(sha=commit_sha, message=commit_message),
         tags=tags if tags is not None else [Tag(name=_LATEST_TAG_NAME, commit_sha=_PRIOR_SHA)],
     )
-    strategy: typing.Final = _StubStrategy(
-        name=strategy_name,
-        no_bump_status=_NO_BUMP_STATUS_BY_STRATEGY[strategy_name],
-        no_bump_reason=_NO_BUMP_REASON_BY_STRATEGY[strategy_name],
-        bump_to_return=bump,
-    )
+    strategy: typing.Final = _StubStrategy(name=strategy_name, decision=decision)
     output: typing.Final = _RecordingOutput()
     use_case: typing.Final = SemvertagUseCase(
         provider=typing.cast("typing.Any", provider),
@@ -126,31 +113,17 @@ def test_skips_with_already_tagged_when_latest_commit_sha_matches_a_tag() -> Non
     assert provider.create_tag_calls == []
 
 
-def test_skips_with_no_merge_commit_under_branch_prefix_when_bump_is_none() -> None:
+def test_strategy_decline_becomes_no_bump_with_its_status_and_reason() -> None:
     use_case, provider, output = _make_use_case(
         commit_message=_NON_MERGE_MESSAGE,
-        bump=Bump.NONE,
-    )
-
-    result: typing.Final = use_case(output=output)
-
-    assert isinstance(result, NoBump)
-    assert result.status == "no_merge_commit"
-    assert result.reason
-    assert provider.create_tag_calls == []
-
-
-def test_skips_with_no_conforming_commit_under_conventional_commits_when_bump_is_none() -> None:
-    use_case, _provider, output = _make_use_case(
-        commit_message="random text",
-        bump=Bump.NONE,
+        decision=_STUB_DECLINE,
         strategy_name=_CONVENTIONAL_STRATEGY,
     )
 
     result: typing.Final = use_case(output=output)
 
-    assert isinstance(result, NoBump)
-    assert result.status == "no_conforming_commit"
+    assert result == NoBump(status="stub_declined", reason="Stub strategy declined.", commit=_LATEST_SHA)
+    assert provider.create_tag_calls == []
     assert output.emitted == [(result, _CONVENTIONAL_STRATEGY)]
 
 
@@ -184,7 +157,7 @@ def test_picks_highest_semver_tag_not_first_in_list_when_computing_bump() -> Non
             Tag(name="2.0.0", commit_sha=_PRIOR_SHA),
             Tag(name="1.9.0", commit_sha="y"),
         ],
-        bump=Bump.PATCH,
+        decision=Bump.PATCH,
     )
 
     result: typing.Final = use_case(output=output)
@@ -203,7 +176,7 @@ def test_picks_highest_semver_tag_not_first_in_list_when_computing_bump() -> Non
     ],
 )
 def test_bump_arithmetic_dispatches_to_semver_bump_kind(bump: Bump, expected_tag: str) -> None:
-    use_case, _provider, output = _make_use_case(bump=bump)
+    use_case, _provider, output = _make_use_case(decision=bump)
     result: typing.Final = use_case(output=output)
     assert isinstance(result, Created)
     assert result.tag == expected_tag
@@ -260,16 +233,16 @@ def test_dry_run_does_not_affect_no_tags_path() -> None:
     assert provider.create_tag_calls == []
 
 
-def test_dry_run_does_not_affect_strategy_no_bump_path() -> None:
+def test_dry_run_does_not_affect_strategy_decline_path() -> None:
     use_case, provider, output = _make_use_case(
         commit_message=_NON_MERGE_MESSAGE,
-        bump=Bump.NONE,
+        decision=_STUB_DECLINE,
     )
 
     result: typing.Final = use_case(output=output, dry_run=True)
 
     assert isinstance(result, NoBump)
-    assert result.status == "no_merge_commit"
+    assert result.status == "stub_declined"
     assert provider.create_tag_calls == []
 
 
@@ -382,7 +355,7 @@ def test_v_prefixed_tag_wins_an_exact_precedence_tie(tag_names: list[str]) -> No
 def test_v_prefixed_prerelease_baseline_finalizes_and_keeps_its_prefix() -> None:
     use_case, _provider, output = _make_use_case(
         tags=[Tag(name="v1.0.0-rc.1", commit_sha=_PRIOR_SHA)],
-        bump=Bump.PATCH,
+        decision=Bump.PATCH,
     )
 
     result: typing.Final = use_case(output=output, dry_run=True)
