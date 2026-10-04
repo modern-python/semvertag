@@ -18,8 +18,9 @@ git tag.
 ## Quick start
 
 semvertag bumps from the highest existing semver tag and never creates
-the first one. Before the first run, create a plain semver tag such as
-`0.1.0` (a `v` prefix does not parse and is ignored).
+the first one. Before the first run, create a semver tag such as
+`0.1.0`, or `v0.1.0` if you want `v`-prefixed tags: each new tag keeps
+the prefix of the one it bumps from.
 
 ### GitHub Actions
 

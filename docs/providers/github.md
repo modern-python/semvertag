@@ -41,10 +41,18 @@ ref via the GitHub API. If no bump is warranted, the job exits 0
 without pushing.
 
 > semvertag bumps from the highest existing semver tag
-> and never creates the first one. It reads only plain semver tags such
-> as `0.1.0`; a `v` prefix (`v0.1.0`) does not parse and is ignored. Until
-> one exists, every run reports `no_tags` and exits 0. Push one with
-> `git tag 0.1.0 && git push origin 0.1.0`.
+> and never creates the first one. It reads plain semver tags such as
+> `0.1.0` and `v`-prefixed ones such as `v0.1.0`, and each new tag keeps
+> the prefix of the one it bumps from. Other forms (`V0.1.0`,
+> `release-0.1.0`) are ignored. Until a readable tag exists, every run
+> reports `no_tags` and exits 0. Push one with
+> `git tag 0.1.0 && git push origin 0.1.0` (or `v0.1.0` for `v` tags).
+
+> **Upgrading from a release that ignored `v` tags:** if your history is
+> `v`-prefixed and you seeded a bare tag such as `0.1.0` to get started,
+> semvertag now bumps from whichever tag has the highest version, usually
+> your latest `v` tag (after `v1.4.0` comes `v1.5.0`, not `0.2.0`). When
+> the same version exists in both forms, the `v` tag wins.
 
 > semvertag detects GitHub Actions from the `GITHUB_ACTIONS=true` env
 > var that GHA sets automatically, so the `--provider` flag is optional
@@ -97,7 +105,7 @@ When you give the step an `id:`, downstream steps can read three outputs:
 
 | Output | Value |
 |---|---|
-| `tag` | The created tag (e.g. `1.2.3`), or empty string when `status` is `no-bump`. |
+| `tag` | The created tag (e.g. `1.2.3`, or `v1.2.3` in a `v`-prefixed repo), or empty string when `status` is `no-bump`. |
 | `bump` | `none` \| `patch` \| `minor` \| `major`. |
 | `status` | `created` (tag pushed) \| `no-bump` (nothing to tag: no prior tag, already tagged, no merge commit, or non-conforming commit). On CLI error the action itself exits non-zero and this output is not written. |
 

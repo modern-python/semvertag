@@ -337,3 +337,75 @@ def test_build_metadata_baseline_still_bumps() -> None:
     assert selected is not None
     _tag, version = selected
     assert _compute_new_version(version, Bump.PATCH) == "1.2.4"
+
+
+def test_new_tag_inherits_v_prefix_from_latest_tag() -> None:
+    use_case, provider, output = _make_use_case(tags=[Tag(name="v1.4.2", commit_sha=_PRIOR_SHA)])
+
+    result: typing.Final = use_case(output=output)
+
+    assert isinstance(result, Created)
+    assert result.tag == "v1.5.0"
+    assert provider.create_tag_calls == [("v1.5.0", _LATEST_SHA)]
+
+
+@pytest.mark.parametrize(
+    ("tag_names", "expected_tag"),
+    [
+        (["0.1.0", "v1.4.2"], "v1.5.0"),
+        (["v0.9.0", "1.4.2"], "1.5.0"),
+    ],
+)
+def test_highest_precedence_wins_regardless_of_tag_prefix(tag_names: list[str], expected_tag: str) -> None:
+    use_case, _provider, output = _make_use_case(
+        tags=[Tag(name=name, commit_sha=f"sha{index}") for index, name in enumerate(tag_names)],
+    )
+
+    result: typing.Final = use_case(output=output)
+
+    assert isinstance(result, Created)
+    assert result.tag == expected_tag
+
+
+@pytest.mark.parametrize("tag_names", [["v1.4.2", "1.4.2"], ["1.4.2", "v1.4.2"]])
+def test_v_prefixed_tag_wins_an_exact_precedence_tie(tag_names: list[str]) -> None:
+    use_case, _provider, output = _make_use_case(
+        tags=[Tag(name=name, commit_sha=f"sha{index}") for index, name in enumerate(tag_names)],
+    )
+
+    result: typing.Final = use_case(output=output)
+
+    assert isinstance(result, Created)
+    assert result.tag == "v1.5.0"
+
+
+def test_v_prefixed_prerelease_baseline_finalizes_and_keeps_its_prefix() -> None:
+    use_case, _provider, output = _make_use_case(
+        tags=[Tag(name="v1.0.0-rc.1", commit_sha=_PRIOR_SHA)],
+        bump=Bump.PATCH,
+    )
+
+    result: typing.Final = use_case(output=output, dry_run=True)
+
+    assert isinstance(result, DryRun)
+    assert result.tag == "v1.0.0"
+
+
+@pytest.mark.parametrize("tag_name", ["V1.2.0", "release-1.2.0", "v0", "vv1.2.0"])
+def test_tags_with_another_tag_prefix_are_not_latest_tag_candidates(tag_name: str) -> None:
+    use_case, provider, output = _make_use_case(tags=[Tag(name=tag_name, commit_sha=_PRIOR_SHA)])
+
+    result: typing.Final = use_case(output=output)
+
+    assert isinstance(result, NoTags)
+    assert provider.create_tag_calls == []
+
+
+def test_skips_with_already_tagged_when_head_carries_the_v_prefixed_latest_tag() -> None:
+    use_case, provider, output = _make_use_case(tags=[Tag(name="v1.4.2", commit_sha=_LATEST_SHA)])
+
+    result: typing.Final = use_case(output=output)
+
+    assert isinstance(result, AlreadyTagged)
+    assert result.tag == "v1.4.2"
+    assert provider.create_tag_calls == []

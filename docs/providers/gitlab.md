@@ -44,10 +44,18 @@ project's `origin`. If no bump is warranted, the job exits 0 without
 pushing.
 
 > semvertag bumps from the highest existing semver tag
-> and never creates the first one. It reads only plain semver tags such
-> as `0.1.0`; a `v` prefix (`v0.1.0`) does not parse and is ignored. Until
-> one exists, every run reports `no_tags` and exits 0. Push one with
-> `git tag 0.1.0 && git push origin 0.1.0`.
+> and never creates the first one. It reads plain semver tags such as
+> `0.1.0` and `v`-prefixed ones such as `v0.1.0`, and each new tag keeps
+> the prefix of the one it bumps from. Other forms (`V0.1.0`,
+> `release-0.1.0`) are ignored. Until a readable tag exists, every run
+> reports `no_tags` and exits 0. Push one with
+> `git tag 0.1.0 && git push origin 0.1.0` (or `v0.1.0` for `v` tags).
+
+> **Upgrading from a release that ignored `v` tags:** if your history is
+> `v`-prefixed and you seeded a bare tag such as `0.1.0` to get started,
+> semvertag now bumps from whichever tag has the highest version, usually
+> your latest `v` tag (after `v1.4.0` comes `v1.5.0`, not `0.2.0`). When
+> the same version exists in both forms, the `v` tag wins.
 
 > `resource_group: semvertag` makes GitLab serialize concurrent
 > `semvertag` jobs across pipelines on the same project, so

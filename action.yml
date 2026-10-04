@@ -22,7 +22,7 @@ inputs:
 
 outputs:
   tag:
-    description: 'The created tag (e.g. 1.2.3), or empty string if no bump was warranted.'
+    description: 'The created tag (e.g. 1.2.3, or v1.2.3 in a v-prefixed repo), or empty string if no bump was warranted.'
     value: ${{ steps.run.outputs.tag }}
   bump:
     description: 'The computed bump: none | patch | minor | major.'
