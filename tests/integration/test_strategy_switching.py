@@ -68,7 +68,7 @@ def test_skips_with_no_conforming_commit_when_strategy_is_cc_and_message_has_no_
 
     assert result.exit_code == 0
     assert "No tag created" in result.stdout
-    assert "No conforming Conventional Commits type" in result.stdout
+    assert "Commit subject is not a Conventional Commit." in result.stdout
 
 
 def test_marina_journey_same_fixture_different_strategies_produces_different_bumps(

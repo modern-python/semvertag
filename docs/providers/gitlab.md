@@ -149,8 +149,8 @@ Pick `branch-prefix` if your team merges merge requests with branch
 names that follow a `feature/...`, `bugfix/...`, `hotfix/...`
 convention and lands them as merge commits. semvertag reads the head
 commit's source-branch prefix and bumps accordingly: `feature/` bumps
-minor, `bugfix/` and `hotfix/` bump patch, and any other prefix bumps
-nothing. With squash merges the
+minor, `bugfix/` and `hotfix/` bump patch, and a merge with any other
+prefix bumps nothing (`unmapped_branch_prefix`). With squash merges the
 head is not a merge commit and the run reports `no_merge_commit`.
 This is the default. See
 [Branch-prefix strategy](../strategies/branch-prefix.md) for the full

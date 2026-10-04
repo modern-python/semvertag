@@ -14,11 +14,13 @@ commits since the latest tag; see [Head commit only](#head-commit-only).
 | `!` suffix on the type (e.g. `feat!:`, `fix!:`, `refactor!:`) | major |
 | `feat:` (or `feat(scope):`) | minor |
 | `fix:` (or `fix(scope):`), `perf:` (or `perf(scope):`) | patch |
-| Any other type (`chore`, `docs`, `refactor`, `style`, `test`, `build`, `ci`, `revert`, ...) | none |
-| Commits whose subject does not match the type-grammar at all | none |
+| Any other type (`chore`, `docs`, `refactor`, `style`, `test`, `build`, `ci`, `revert`, ...) | none, status `no_bumping_type` |
+| Commits whose subject does not match the type-grammar at all | none, status `no_conforming_commit` |
 
 The grammar checked is `^(type)(?:\((scope)\))?(!)?:`. Anything not
-matching this pattern returns `none`. The `!` marker takes precedence
+matching this pattern is declined with `no_conforming_commit`; a
+matching commit whose type is in neither list is declined with
+`no_bumping_type`. The `!` marker takes precedence
 over the type: `chore!:` is a major bump even though `chore` is
 otherwise unmapped.
 

@@ -107,7 +107,7 @@ When you give the step an `id:`, downstream steps can read three outputs:
 |---|---|
 | `tag` | The created tag (e.g. `1.2.3`, or `v1.2.3` in a `v`-prefixed repo), or empty string when `status` is `no-bump`. |
 | `bump` | `none` \| `patch` \| `minor` \| `major`. |
-| `status` | `created` (tag pushed) \| `no-bump` (nothing to tag: no prior tag, already tagged, no merge commit, or non-conforming commit). On CLI error the action itself exits non-zero and this output is not written. |
+| `status` | `created` (tag pushed) \| `no-bump` (nothing to tag: no prior tag, already tagged, or the strategy declined the head commit). On CLI error the action itself exits non-zero and this output is not written. |
 
 Example: trigger a downstream release-notes job only when a tag was
 created.
@@ -203,9 +203,9 @@ Pick `branch-prefix` if your team merges PRs with branch names that
 follow a `feature/...`, `bugfix/...`, `hotfix/...` convention and lands
 them as merge commits. semvertag reads the head commit's source-branch
 prefix and bumps accordingly: `feature/` bumps minor, `bugfix/` and
-`hotfix/` bump patch, and any other prefix bumps nothing. With squash
-merges the head is not a merge commit and the run reports
-`no_merge_commit`. This is the default. See
+`hotfix/` bump patch, and a merge with any other prefix bumps nothing
+(`unmapped_branch_prefix`). With squash merges the head is not a merge
+commit and the run reports `no_merge_commit`. This is the default. See
 [Branch-prefix strategy](../strategies/branch-prefix.md) for the full
 prefix-to-bump table and edge-case behavior.
 

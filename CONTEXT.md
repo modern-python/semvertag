@@ -34,9 +34,15 @@ in the same file, where a *provider* is a DI recipe. Say **provider** for the fo
 **modern-di provider** for the other.
 
 **Strategy**:
-The rule that turns **one** commit into a `Bump`. It receives the head commit of the default branch
-and nothing else — no network, no tag history, no commit range. A strategy never picks a tag or a
-version; the use-case does that around it.
+The rule that turns **one** commit into a `Bump` or a **decline**. It receives the head commit of the
+default branch and nothing else — no network, no tag history, no commit range. A strategy never picks
+a tag or a version; the use-case does that around it.
+
+**Decline**:
+A strategy's answer that the head commit warrants no bump, naming which of its rules applied as a
+status token and a fixed reason. Each distinct rule gets its own token, so a status never claims
+something false about the commit (a merge commit is never reported as `no_merge_commit`).
+_Avoid_: "no bump" for the strategy's answer. `NoBump` is the **Outcome** variant a decline becomes.
 
 **Latest tag**:
 The bump baseline: the **highest by SemVer precedence** among the repo's SemVer-form tags, bare
@@ -57,8 +63,9 @@ What a run did, as the closed sum `Created | DryRun | NoTags | AlreadyTagged | N
 `semvertag/_outcome.py`. It is internal and free to grow — the renderers `match` it exhaustively, so
 a new variant is a type error until handled. Distinct from **`RunResult`**, the JSON wire DTO it
 projects onto, and from **status**, the one string field on that DTO. The wire status tokens are a
-frozen public contract (`schema_version` `"1.0"`, parsed by `jq` in `action.yml`); the `Outcome`
-variant names are not.
+frozen public contract (`schema_version` `"1.0"`, parsed by `jq` in `action.yml`): a token never
+changes meaning, though new ones may be added. The `Outcome` variant names are not frozen, and neither
+is **reason**, the human-facing sentence beside the status, which may be reworded.
 
 **Prerelease**:
 Two incompatible spellings live in this repo and only one is recognized as a bump baseline.

@@ -12,6 +12,7 @@ _SEED_ADVICE: typing.Final = (
 )
 _NO_TAGS_REASON: typing.Final = f"No prior semver-conforming tags found; {_SEED_ADVICE}"
 _ALREADY_TAGGED_REASON: typing.Final = "Latest commit already tagged."
+_NO_BUMP: typing.Final = "none"
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
@@ -76,7 +77,7 @@ def to_run_result(outcome: Outcome, *, strategy: str) -> RunResult:
         case NoTags(commit=commit, skipped_tag_count=skipped_tag_count):
             return RunResult(
                 strategy=strategy,
-                bump=Bump.NONE.value,
+                bump=_NO_BUMP,
                 status="no_tags",
                 tag=None,
                 commit=commit,
@@ -85,16 +86,14 @@ def to_run_result(outcome: Outcome, *, strategy: str) -> RunResult:
         case AlreadyTagged(tag=tag, commit=commit):
             return RunResult(
                 strategy=strategy,
-                bump=Bump.NONE.value,
+                bump=_NO_BUMP,
                 status="already_tagged",
                 tag=tag,
                 commit=commit,
                 reason=_ALREADY_TAGGED_REASON,
             )
         case NoBump(status=status, reason=reason, commit=commit):
-            return RunResult(
-                strategy=strategy, bump=Bump.NONE.value, status=status, tag=None, commit=commit, reason=reason
-            )
+            return RunResult(strategy=strategy, bump=_NO_BUMP, status=status, tag=None, commit=commit, reason=reason)
         case _:  # pragma: no cover - exhaustiveness guard; ty verifies every Outcome is matched
             typing.assert_never(outcome)
 
