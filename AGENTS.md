@@ -23,12 +23,20 @@ A human at a shell, the GitHub Action, and the GitLab CI component all invoke th
 
 ## Cutting a release (maintainers)
 
-Push a bare semver tag off green `main` — `git tag 0.9.0 && git push origin 0.9.0`;
+Push a signed, annotated bare semver tag off green `main` —
+`git tag -s 0.9.0 -m "semvertag 0.9.0" origin/main && git push origin 0.9.0`;
 [`release.yml`](.github/workflows/release.yml) does the rest and its comments say in what order and
-why. Two things that file cannot tell you: the tag is the commitment point, cut by convention only
-off a green `main` with no in-workflow CI gate; and if `just publish` succeeds but a later step
-fails, do **not** re-push the tag — PyPI rejects re-uploading an existing version, so create the
-Release and move `v0` by hand, or cut a new patch tag.
+why. What that file cannot tell you:
+
+- The tag is the commitment point, cut by convention only off a green `main` with no in-workflow CI
+  gate.
+- Version: bump the minor (`0.9.0`) when the release carries a `feat:` or any behaviour change, the
+  patch otherwise.
+- The Release body is generated from the squashed PR titles. When a change alters behaviour on
+  upgrade, prepend a `## Upgrading` section with `gh release edit`.
+- If `just publish` succeeds but a later step fails, do **not** re-push the tag — PyPI rejects
+  re-uploading an existing version, so create the Release and move `v0` by hand, or cut a new patch
+  tag.
 
 ## Workflow
 
