@@ -409,3 +409,21 @@ def test_skips_with_already_tagged_when_head_carries_the_v_prefixed_latest_tag()
     assert isinstance(result, AlreadyTagged)
     assert result.tag == "v1.4.2"
     assert provider.create_tag_calls == []
+
+
+@pytest.mark.parametrize(
+    ("tag_names", "expected_count"),
+    [
+        ([], 0),
+        (["V1.2.0", "release-1.2.0", "v1"], 3),
+    ],
+)
+def test_no_tags_counts_the_tags_that_are_not_semver_form(tag_names: list[str], expected_count: int) -> None:
+    use_case, _provider, output = _make_use_case(
+        tags=[Tag(name=name, commit_sha=f"sha{index}") for index, name in enumerate(tag_names)],
+    )
+
+    result: typing.Final = use_case(output=output)
+
+    assert isinstance(result, NoTags)
+    assert result.skipped_tag_count == expected_count

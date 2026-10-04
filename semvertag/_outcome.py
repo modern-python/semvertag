@@ -7,10 +7,10 @@ from semvertag._types import Bump, RunResult
 # These are the JSON wire reasons. The human terminal path (_output._format_outcome)
 # words NoTags/AlreadyTagged differently on purpose — edit both if you change the
 # message for one audience.
-_NO_TAGS_REASON: typing.Final = (
-    "No prior semver-conforming tags found; create an initial tag such as 0.1.0 "
-    "(or v0.1.0 for v-prefixed tags) on a default-branch commit."
+_SEED_ADVICE: typing.Final = (
+    "create an initial tag such as 0.1.0 (or v0.1.0 for v-prefixed tags) on a default-branch commit."
 )
+_NO_TAGS_REASON: typing.Final = f"No prior semver-conforming tags found; {_SEED_ADVICE}"
 _ALREADY_TAGGED_REASON: typing.Final = "Latest commit already tagged."
 
 
@@ -37,6 +37,7 @@ class NoTags:
     """No prior semver tag to bump from; semvertag does not create the first one."""
 
     commit: str
+    skipped_tag_count: int
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
@@ -72,14 +73,14 @@ def to_run_result(outcome: Outcome, *, strategy: str) -> RunResult:
             return RunResult(strategy=strategy, bump=bump.value, status="created", tag=tag, commit=commit, reason=None)
         case DryRun(tag=tag, bump=bump, commit=commit):
             return RunResult(strategy=strategy, bump=bump.value, status="dry_run", tag=tag, commit=commit, reason=None)
-        case NoTags(commit=commit):
+        case NoTags(commit=commit, skipped_tag_count=skipped_tag_count):
             return RunResult(
                 strategy=strategy,
                 bump=Bump.NONE.value,
                 status="no_tags",
                 tag=None,
                 commit=commit,
-                reason=_NO_TAGS_REASON,
+                reason=_no_tags_reason(skipped_tag_count),
             )
         case AlreadyTagged(tag=tag, commit=commit):
             return RunResult(
@@ -96,3 +97,10 @@ def to_run_result(outcome: Outcome, *, strategy: str) -> RunResult:
             )
         case _:  # pragma: no cover - exhaustiveness guard; ty verifies every Outcome is matched
             typing.assert_never(outcome)
+
+
+def _no_tags_reason(skipped_tag_count: int) -> str:
+    if not skipped_tag_count:
+        return _NO_TAGS_REASON
+    noun: typing.Final = "tag" if skipped_tag_count == 1 else "tags"
+    return f"None of the repo's {skipped_tag_count} {noun} is SemVer-form (1.2.0 or v1.2.0); {_SEED_ADVICE}"

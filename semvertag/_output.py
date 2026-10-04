@@ -10,6 +10,9 @@ from semvertag._redact import redact
 
 
 _COMMIT_SHORT_LEN: typing.Final = 7
+_SEED_ADVICE: typing.Final = (
+    "create an initial tag such as 0.1.0 (or v0.1.0 for v-prefixed tags) on a default-branch commit."
+)
 
 
 class Output(typing.Protocol):
@@ -62,10 +65,13 @@ def _format_outcome(outcome: Outcome, *, strategy: str) -> str:
         case DryRun(tag=tag, bump=bump, commit=commit):
             short = commit[:_COMMIT_SHORT_LEN]
             return f"Dry run: would create tag {tag} on commit {short} (strategy: {strategy}, bump: {bump.value})"
-        case NoTags():
+        case NoTags(skipped_tag_count=0):
+            return f"No tag created — no prior semver-conforming tag to bump from; {_SEED_ADVICE}"
+        case NoTags(skipped_tag_count=skipped_tag_count):
+            noun: typing.Final = "tag" if skipped_tag_count == 1 else "tags"
             return (
-                "No tag created — no prior semver-conforming tag to bump from; "
-                "create an initial tag such as 0.1.0 (or v0.1.0 for v-prefixed tags) on a default-branch commit."
+                f"No tag created — none of the repo's {skipped_tag_count} {noun} is SemVer-form "
+                f"(1.2.0 or v1.2.0); {_SEED_ADVICE}"
             )
         case AlreadyTagged(tag=tag):
             return f"No tag created — latest commit is already tagged {tag}."
