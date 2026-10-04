@@ -65,7 +65,7 @@ def _format_outcome(outcome: Outcome, *, strategy: str) -> str:
         case NoTags():
             return (
                 "No tag created — no prior semver-conforming tag to bump from; "
-                "create an initial tag such as 0.1.0 on a default-branch commit."
+                "create an initial tag such as 0.1.0 (or v0.1.0 for v-prefixed tags) on a default-branch commit."
             )
         case AlreadyTagged(tag=tag):
             return f"No tag created — latest commit is already tagged {tag}."

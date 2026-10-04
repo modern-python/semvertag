@@ -39,11 +39,18 @@ and nothing else — no network, no tag history, no commit range. A strategy nev
 version; the use-case does that around it.
 
 **Latest tag**:
-The bump baseline: the **highest by SemVer precedence** among the repo's SemVer-parseable tags — not
-the most recently created one, and not the tag reachable from HEAD. `_select_latest_semver_tag`
-sorts by `semver.Version` and takes the maximum.
+The bump baseline: the **highest by SemVer precedence** among the repo's SemVer-form tags, bare
+(`1.2.0`) or **`v`-prefixed** (`v1.2.0`) — not the most recently created one, and not the tag
+reachable from HEAD. `_select_latest_semver_tag` sorts by `semver.Version` and takes the maximum.
+The new tag inherits the latest tag's **tag prefix**: after `v1.2.0` comes `v1.3.0`, after `1.2.0`
+comes `1.3.0`.
 _Avoid_: last tag, most recent tag. Both read as "newest by date", which names a different tag the
 moment a patch on an older line is pushed after a newer minor.
+
+**Tag prefix**:
+What precedes the SemVer version in a tag name: lowercase `v`, or nothing. Any other prefix
+(`V1.2.0`, `release-1.2.0`) makes the tag non-SemVer-form, so it is never a latest-tag candidate.
+_Avoid_: bare "prefix". The `branch-prefix` strategy owns that word for `feature/`, `bugfix/`, ….
 
 **Outcome**:
 What a run did, as the closed sum `Created | DryRun | NoTags | AlreadyTagged | NoBump` in
@@ -61,7 +68,8 @@ is the form semvertag publishes *itself* under, and what `release.yml` means by 
 which form you mean.
 
 **Release tag** / **floating major tag**:
-A release tag is **bare semver, no `v`** (`0.4.0`): what the tool emits, what `just publish` feeds to
+This repo's own release tags are **bare semver, no `v`** (`0.4.0`): what semvertag emits here because
+its latest tag is bare, what `just publish` feeds to
 `uv version $GITHUB_REF_NAME`, and what `release.yml` triggers on. The floating major tag is
 **`v`-prefixed** (`v0`): a single moving ref `release.yml` force-updates so action consumers can pin
 `uses: modern-python/semvertag@v0`. Two conventions, one repo; a `v` on a release tag breaks

@@ -10,6 +10,9 @@ from semvertag.providers._base import Provider
 from semvertag.strategies._base import BumpStrategy
 
 
+_V_PREFIX: typing.Final = "v"
+
+
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 class SemvertagUseCase:
     provider: Provider
@@ -39,30 +42,34 @@ class SemvertagUseCase:
                 NoBump(status=self.strategy.no_bump_status, reason=self.strategy.no_bump_reason, commit=commit.sha),
             )
 
-        new_version: typing.Final = _compute_new_version(latest_version, bump)
+        new_tag: typing.Final = _tag_prefix(latest_tag) + _compute_new_version(latest_version, bump)
         if dry_run:
-            return self._emit(output, DryRun(tag=new_version, bump=bump, commit=commit.sha))
+            return self._emit(output, DryRun(tag=new_tag, bump=bump, commit=commit.sha))
 
-        output.progress(f"Creating tag {new_version}...")
-        self.provider.create_tag(name=new_version, commit_sha=commit.sha)
-        return self._emit(output, Created(tag=new_version, bump=bump, commit=commit.sha))
+        output.progress(f"Creating tag {new_tag}...")
+        self.provider.create_tag(name=new_tag, commit_sha=commit.sha)
+        return self._emit(output, Created(tag=new_tag, bump=bump, commit=commit.sha))
 
     def _emit(self, output: Output, outcome: Outcome) -> Outcome:
         output.emit(outcome, strategy=self.strategy.name)
         return outcome
 
 
+def _tag_prefix(tag: Tag) -> str:
+    return _V_PREFIX if tag.name.startswith(_V_PREFIX) else ""
+
+
 def _select_latest_semver_tag(tags: list[Tag]) -> tuple[Tag, semver.Version] | None:
     parsed: list[tuple[semver.Version, Tag]] = []
     for tag in tags:
         try:
-            version = semver.Version.parse(tag.name).replace(build=None)
+            version = semver.Version.parse(tag.name.removeprefix(_V_PREFIX)).replace(build=None)
         except ValueError:
             continue
         parsed.append((version, tag))
     if not parsed:
         return None
-    parsed.sort(key=lambda item: item[0])
+    parsed.sort(key=lambda item: (item[0], item[1].name.startswith(_V_PREFIX)))
     version, tag = parsed[-1]
     return tag, version
 

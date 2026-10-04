@@ -8,7 +8,8 @@ from semvertag._types import Bump, RunResult
 # words NoTags/AlreadyTagged differently on purpose — edit both if you change the
 # message for one audience.
 _NO_TAGS_REASON: typing.Final = (
-    "No prior semver-conforming tags found; create an initial tag such as 0.1.0 on a default-branch commit."
+    "No prior semver-conforming tags found; create an initial tag such as 0.1.0 "
+    "(or v0.1.0 for v-prefixed tags) on a default-branch commit."
 )
 _ALREADY_TAGGED_REASON: typing.Final = "Latest commit already tagged."
 
