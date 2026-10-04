@@ -152,7 +152,7 @@ CLI's `status` field is `dry_run`; the action surface normalizes it to
 You can also run this locally without the action:
 
 ```bash
-uvx 'semvertag>=0.5.0' tag --dry-run --json
+uvx 'semvertag>=0.10.0,<1' tag --dry-run --json
 ```
 
 Output (example):
@@ -237,7 +237,7 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install --quiet --no-cache-dir 'uv>=0.4,<1'
-      - run: uvx 'semvertag>=0.5.0,<1' tag
+      - run: uvx 'semvertag>=0.10.0,<1' tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

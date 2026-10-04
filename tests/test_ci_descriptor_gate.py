@@ -153,7 +153,7 @@ def test_unwired_dry_run_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: 
 def test_pre_dry_run_semvertag_floor_fails(tmp_path: pathlib.Path, shipped_descriptor_docs: list[typing.Any]) -> None:
     """Negative: a semvertag floor below 0.5.0 could resolve a CLI without --dry-run."""
     spec, body = shipped_descriptor_docs
-    body["semvertag"]["script"] = [body["semvertag"]["script"][0].replace(">=0.5.0", ">=0.1")]
+    body["semvertag"]["script"] = [body["semvertag"]["script"][0].replace(">=0.10.0", ">=0.1")]
     bad = _write_descriptor(tmp_path, [spec, body])
     with pytest.raises(DescriptorGateError, match=r"semvertag floor must be >= 0\.5\.0"):
         validate(str(bad))

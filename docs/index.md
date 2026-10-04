@@ -56,7 +56,7 @@ semvertag:
   before_script:
     - pip install --quiet 'uv>=0.4,<1'
   script:
-    - uvx 'semvertag>=0.1,<1' tag
+    - uvx 'semvertag>=0.10.0,<1' tag
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 ```

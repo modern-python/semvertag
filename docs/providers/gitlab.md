@@ -33,7 +33,7 @@ semvertag:
   before_script:
     - pip install --quiet --no-cache-dir 'uv>=0.4,<1'
   script:
-    - uvx 'semvertag>=0.1,<1' tag
+    - uvx 'semvertag>=0.10.0,<1' tag
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 ```
@@ -79,14 +79,13 @@ block on the `include:`. The values and default match
 ## Dry run
 
 Pass `--dry-run` to compute the bump and report the planned tag
-without pushing it. It needs semvertag 0.5.0 or later, so raise the
-floor in the job:
+without pushing it:
 
 ```yaml
 semvertag:
   # ...
   script:
-    - uvx 'semvertag>=0.5.0,<1' tag --dry-run
+    - uvx 'semvertag>=0.10.0,<1' tag --dry-run
 ```
 
 The Catalog component exposes this as a boolean `dry-run` input,
