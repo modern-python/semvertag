@@ -1,7 +1,7 @@
 name: semvertag
 
 # Dogfood the local composite action against this repo in DRY-RUN: on every
-# push to main it computes the planned bump (exercising action.yml + the
+# push to main it computes the head commit's bump (exercising action.yml + the
 # published semvertag) but never pushes a tag. This keeps action.yml honest —
 # a breaking change fails the run before it can affect external users.
 #
@@ -10,9 +10,6 @@ name: semvertag
 # Release + v0). Dry-run is load-bearing: it guarantees the only tags in the
 # repo are deliberate release tags — do not give this job a push token or
 # remove `dry-run: true`.
-#
-# This repo's branch convention uses `feat/...`, so SEMVERTAG_BRANCH_PREFIX__MINOR
-# overrides the default `feature/` mapping.
 
 on:
   push:
@@ -32,6 +29,5 @@ jobs:
       - uses: actions/checkout@v6
       - uses: ./
         with:
+          strategy: conventional-commits
           dry-run: true
-        env:
-          SEMVERTAG_BRANCH_PREFIX__MINOR: '["feat/"]'
