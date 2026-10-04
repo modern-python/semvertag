@@ -94,9 +94,20 @@ def test_matrix_keeps_stderr_for_errors(quiet: bool) -> None:
 @pytest.mark.parametrize(
     ("outcome", "expected"),
     [
-        (NoTags(commit="abc1234def"), "no prior semver-conforming tag"),
-        (NoTags(commit="abc1234def"), "create an initial tag such as 0.1.0"),
-        (NoTags(commit="abc1234def"), "or v0.1.0 for v-prefixed tags"),
+        (NoTags(commit="abc1234def", skipped_tag_count=0), "no prior semver-conforming tag"),
+        (NoTags(commit="abc1234def", skipped_tag_count=0), "create an initial tag such as 0.1.0"),
+        (NoTags(commit="abc1234def", skipped_tag_count=0), "or v0.1.0 for v-prefixed tags"),
+        (
+            NoTags(commit="abc1234def", skipped_tag_count=3),
+            "none of the repo's 3 tags is SemVer-form (1.2.0 or v1.2.0); create an initial tag such as 0.1.0",
+        ),
+        (
+            NoTags(commit="abc1234def", skipped_tag_count=1),
+            (
+                "none of the repo's 1 tag is SemVer-form (1.2.0 or v1.2.0); create an initial tag such as 0.1.0 "
+                "(or v0.1.0 for v-prefixed tags) on a default-branch commit."
+            ),
+        ),
         (AlreadyTagged(tag="1.2.0", commit="abc1234def"), "already tagged 1.2.0"),
         (
             NoBump(status="no_merge_commit", reason="Latest commit is not a merge commit.", commit="abc1234def"),

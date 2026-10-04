@@ -28,7 +28,7 @@ class SemvertagUseCase:
         selected: typing.Final = _select_latest_semver_tag(tags)
 
         if selected is None:
-            return self._emit(output, NoTags(commit=commit.sha))
+            return self._emit(output, NoTags(commit=commit.sha, skipped_tag_count=len(tags)))
 
         latest_tag, latest_version = selected
         if latest_tag.commit_sha == commit.sha:

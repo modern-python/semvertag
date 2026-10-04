@@ -1,5 +1,7 @@
 import typing
 
+import pytest
+
 from semvertag._outcome import (
     _ALREADY_TAGGED_REASON,
     _NO_TAGS_REASON,
@@ -32,14 +34,14 @@ def test_dry_run_maps_to_dry_run_wire_result() -> None:
 
 
 def test_no_tags_maps_with_none_bump_and_fixed_reason() -> None:
-    result: typing.Final = to_run_result(NoTags(commit=_COMMIT), strategy=_STRATEGY)
+    result: typing.Final = to_run_result(NoTags(commit=_COMMIT, skipped_tag_count=0), strategy=_STRATEGY)
     assert result == RunResult(
         strategy=_STRATEGY, bump="none", status="no_tags", tag=None, commit=_COMMIT, reason=_NO_TAGS_REASON
     )
 
 
 def test_no_tags_reason_says_how_to_seed_the_first_tag() -> None:
-    reason: typing.Final = to_run_result(NoTags(commit=_COMMIT), strategy=_STRATEGY).reason
+    reason: typing.Final = to_run_result(NoTags(commit=_COMMIT, skipped_tag_count=0), strategy=_STRATEGY).reason
     assert reason is not None
     assert "create an initial tag such as 0.1.0" in reason
     assert "or v0.1.0 for v-prefixed tags" in reason
@@ -74,5 +76,32 @@ def test_no_bump_passes_strategy_status_and_reason_through() -> None:
 
 
 def test_schema_version_is_preserved_on_the_wire() -> None:
-    result: typing.Final = to_run_result(NoTags(commit=_COMMIT), strategy=_STRATEGY)
+    result: typing.Final = to_run_result(NoTags(commit=_COMMIT, skipped_tag_count=0), strategy=_STRATEGY)
     assert result.schema_version == "1.0"
+
+
+@pytest.mark.parametrize(
+    ("skipped_tag_count", "expected_reason"),
+    [
+        (
+            1,
+            (
+                "None of the repo's 1 tag is SemVer-form (1.2.0 or v1.2.0); create an initial tag such as 0.1.0 "
+                "(or v0.1.0 for v-prefixed tags) on a default-branch commit."
+            ),
+        ),
+        (
+            3,
+            (
+                "None of the repo's 3 tags is SemVer-form (1.2.0 or v1.2.0); create an initial tag such as 0.1.0 "
+                "(or v0.1.0 for v-prefixed tags) on a default-branch commit."
+            ),
+        ),
+    ],
+)
+def test_no_tags_reason_counts_tags_that_are_not_semver_form(skipped_tag_count: int, expected_reason: str) -> None:
+    result: typing.Final = to_run_result(
+        NoTags(commit=_COMMIT, skipped_tag_count=skipped_tag_count), strategy=_STRATEGY
+    )
+    assert result.status == "no_tags"
+    assert result.reason == expected_reason

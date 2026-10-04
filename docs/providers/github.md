@@ -287,6 +287,16 @@ The default endpoint is `https://api.github.com`. Set
 workflow-level env pointing to the instance's API root, e.g.
 `https://github.example.com/api/v3`.
 
+### `None of the repo's N tags is SemVer-form (1.2.0 or v1.2.0)`
+
+The repo has tags, but semvertag reads none of them as a bump baseline,
+so the run reports `no_tags` and exits 0 without tagging. It reads only
+plain SemVer tags (`1.2.0`, `1.0.0-rc.1`) and the same with a lowercase
+`v` (`v1.2.0`). It ignores other forms, such as `V1.2.0`,
+`release-1.2.0`, PEP 440 prereleases like `0.9.0rc1`, and floating
+major tags like `v1`. Push a SemVer tag on a default-branch commit to
+start from, e.g. `git tag v0.1.0 && git push origin v0.1.0`.
+
 ### A bump-worthy push was never tagged
 
 The run for that push failed or was skipped. Re-run it. Each run judges
