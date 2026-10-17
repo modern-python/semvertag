@@ -111,11 +111,11 @@ semvertag stands on other `modern-python` libraries:
   both providers use for the GitLab/GitHub REST calls. It handles retries,
   timeouts, typed decoding, and secret redaction.
 
-## 📚 [Documentation](https://semvertag.modern-python.org)
+## Links
 
-## 📦 [PyPI](https://pypi.org/project/semvertag)
-
-## 📝 [License](https://github.com/modern-python/semvertag/blob/main/LICENSE)
+- [Documentation](https://semvertag.modern-python.org)
+- [PyPI](https://pypi.org/project/semvertag)
+- [License](https://github.com/modern-python/semvertag/blob/main/LICENSE)
 
 ## Part of `modern-python`
 
