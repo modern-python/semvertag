@@ -3,14 +3,14 @@
 Auto-tags a GitLab or GitHub repository with a semantic-version git tag from CI:
 it reads the head commit of the default branch and the tag history through the
 forge's REST API, asks a strategy how far the version should move, and creates
-the new tag. Shipped as a Python CLI plus two thin wrappers over it — a GitHub
+the new tag. Shipped as a Python CLI plus two thin wrappers over it: a GitHub
 Actions composite (`action.yml`) and a GitLab CI Catalog component
 (`templates/semvertag.yml`).
 
 ## Language
 
 A term is listed only when there is a synonym to reject, or a meaning subtle enough that code and
-docs must agree on it. General semver and CI vocabulary — tag, version, release, major/minor/patch —
+docs must agree on it. General semver and CI vocabulary (tag, version, release, major/minor/patch)
 does not belong here, however heavily this project uses it.
 
 **Head commit**:
@@ -21,13 +21,13 @@ _Avoid_: latest commit. "Latest" is already pinned by *latest tag* to mean highe
 not newest by date, and the head is newest by position.
 
 **Forge**:
-A repository-hosting service semvertag talks to over REST — GitLab or GitHub today.
+A repository-hosting service semvertag talks to over REST: GitLab or GitHub today.
 _Avoid_: host. `host` is already spoken for by the same-origin pagination guard, whose two
 user-visible error strings say a `Link` header "points to a different host"; there it means scheme +
 netloc, not a forge.
 
 **Provider**:
-The adapter for one forge — `GitHubProvider` / `GitLabProvider` under `semvertag/providers/`, matched
+The adapter for one forge: `GitHubProvider` / `GitLabProvider` under `semvertag/providers/`, matched
 structurally against the `Provider` protocol. Also the user-facing selector value
 (`SEMVERTAG_PROVIDER=github`). Note the collision: `semvertag/ioc.py` imports `modern_di.providers`
 in the same file, where a *provider* is a DI recipe. Say **provider** for the forge adapter and
@@ -35,7 +35,7 @@ in the same file, where a *provider* is a DI recipe. Say **provider** for the fo
 
 **Strategy**:
 The rule that turns **one** commit into a `Bump` or a **decline**. It receives the head commit of the
-default branch and nothing else — no network, no tag history, no commit range. A strategy never picks
+default branch and nothing else: no network, no tag history, no commit range. A strategy never picks
 a tag or a version; the use-case does that around it.
 
 **Decline**:
@@ -46,7 +46,7 @@ _Avoid_: "no bump" for the strategy's answer. `NoBump` is the **Outcome** varian
 
 **Latest tag**:
 The bump baseline: the **highest by SemVer precedence** among the repo's SemVer-form tags, bare
-(`1.2.0`) or **`v`-prefixed** (`v1.2.0`) — not the most recently created one, and not the tag
+(`1.2.0`) or **`v`-prefixed** (`v1.2.0`). It is not the most recently created one, nor the tag
 reachable from HEAD. `_select_latest_semver_tag` sorts by `semver.Version` and takes the maximum.
 The new tag inherits the latest tag's **tag prefix**: after `v1.2.0` comes `v1.3.0`, after `1.2.0`
 comes `1.3.0`.
@@ -60,7 +60,7 @@ _Avoid_: bare "prefix". The `branch-prefix` strategy owns that word for `feature
 
 **Outcome**:
 What a run did, as the closed sum `Created | DryRun | NoTags | AlreadyTagged | NoBump` in
-`semvertag/_outcome.py`. It is internal and free to grow — the renderers `match` it exhaustively, so
+`semvertag/_outcome.py`. It is internal and free to grow: the renderers `match` it exhaustively, so
 a new variant is a type error until handled. Distinct from **`RunResult`**, the JSON wire DTO it
 projects onto, and from **status**, the one string field on that DTO. The wire status tokens are a
 frozen public contract (`schema_version` `"1.0"`, parsed by `jq` in `action.yml`): a token never
@@ -70,7 +70,7 @@ is **reason**, the human-facing sentence beside the status, which may be reworde
 **Prerelease**:
 Two incompatible spellings live in this repo and only one is recognized as a bump baseline.
 **SemVer-form** (`1.0.0-rc.1`) parses, sorts by SemVer precedence, and finalizes on the next bump.
-**PEP 440** (`0.9.0rc1`) does not parse as SemVer and is skipped from selection entirely — yet that
+**PEP 440** (`0.9.0rc1`) does not parse as SemVer and is skipped from selection entirely, yet that
 is the form semvertag publishes *itself* under, and what `release.yml` means by "pre-release". Say
 which form you mean.
 
