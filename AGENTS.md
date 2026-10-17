@@ -13,7 +13,7 @@ it: a GitHub Actions composite (`action.yml`) and a GitLab CI Catalog component
 ## Commands
 
 `just` (task runner) and `uv` (package manager). The [`justfile`](justfile) is the source of truth:
-run `just --list`, or read it. The one thing it does not say: `just test` passes args through, so
+`just --list`, or read it. The one thing it does not say: `just test` passes args through, so
 `just test tests/unit/test_branch_prefix_strategy.py -q` works.
 
 ## Architecture
