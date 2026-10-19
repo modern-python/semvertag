@@ -19,8 +19,8 @@ classifiers = [
 ]
 version = "0"
 dependencies = [
-    "typer>=0.13",
-    "rich>=10.11",
+    "typer>=0.26",
+    "rich>=13.8",
     "semver>=3",
     "pydantic-settings>=2",
     "modern-di-typer>=4,<5",
