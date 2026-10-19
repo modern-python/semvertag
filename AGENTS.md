@@ -44,9 +44,9 @@ Every link in `README.md` must be absolute: `https://github.com/modern-python/<r
 or `.../tree/main/<path>` for a directory. Never a relative path: `README.md` is also the PyPI long
 description, and PyPI does not rewrite relative links, so a relative one 404s on the package page.
 
-Before pushing a change that raises a dependency floor, run the `floors` steps locally
-([CI6](https://modern-python.org/standard/#CI6)). A new floor can require a higher floor on another
-direct dependency.
+Before pushing a change that raises a dependency floor, run the `floors` job's steps from
+[`_checks.yml`](.github/workflows/_checks.yml) locally on the floor Python and the newest. If the
+compile step fails to resolve, raise the direct floor it names to the version required.
 
 ## Agent skills
 
