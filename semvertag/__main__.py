@@ -135,6 +135,7 @@ def _main_callback(  # noqa: PLR0913, PLR0917
 
 @modern_di_typer.inject
 def _resolve_use_case(
+    _ctx: typer.Context,
     use_case: typing.Annotated[SemvertagUseCase, modern_di_typer.FromDI(SemvertagUseCase)],
 ) -> SemvertagUseCase:
     return use_case
@@ -158,7 +159,7 @@ def _tag_command(
 ) -> None:
     output: Output = build_json_output(quiet=quiet) if json_flag else build_rich_output(quiet=quiet)
     try:
-        use_case = _resolve_use_case(ctx=ctx)
+        use_case = _resolve_use_case(ctx)
         use_case(output=output, dry_run=dry_run)
     except ImportError as exc:
         err = ConfigError(f"Required module unavailable: {exc}.")
