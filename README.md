@@ -117,6 +117,8 @@ semvertag stands on other `modern-python` libraries:
 - [PyPI](https://pypi.org/project/semvertag)
 - [License](https://github.com/modern-python/semvertag/blob/main/LICENSE)
 
+If this project saves you time, consider giving it a star on GitHub.
+
 ## Part of `modern-python`
 
 Browse the full list of templates and libraries in
